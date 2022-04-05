@@ -129,10 +129,9 @@ if __name__ == '__main__':
     if not os.path.exists(text_path):
         os.mkdir(text_path)
 
-    word_embedding_path = os.path.join('./datasets', f'glove_d{args.word_embedding_dim}.pkl')
-
+    word_embedding_path = os.path.join('./datasets', f'glove_d{args.glove_dim}.pkl')
     if not os.path.exists(word_embedding_path):
-        glove(word_dict, args.word_embedding_dim, word_embedding_path)
+        glove(word_dict, args.glove_dim, word_embedding_path)
 
     news_file = f'news_t{args.max_title_len}_b{args.max_body_len}.txt'
     if not os.path.exists(os.path.join(text_path, news_file)):

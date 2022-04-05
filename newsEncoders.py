@@ -19,8 +19,8 @@ class NewsEncoder(nn.Module):
         self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
         self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim, args.news_dim)
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
-                                      args.max_body_len)
+        # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
+        #                               args.max_body_len)
 
         if args.pretrain == 'glove':
             with open(self.word_embedding_path, 'rb') as word_embedding_f:
@@ -58,15 +58,15 @@ class NewsEncoder(nn.Module):
         input_text = torch.cat([title_text, body_text], dim=1)
         input_mask = torch.cat([title_mask, body_mask], dim=1)
 
-        # bert_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        # word_emb = bert_output.last_hidden_state[:, :self.max_body_len, :]  # [B * L, N, d]
+        bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
+        word_emb = bert_output.last_hidden_state[:, :, :]  # [B * L, N, d]
         # worb_emb = self.dropout(self.word_embedding(input_text))
-        # c = self.dropout(self.multihead_attention(worb_emb, worb_emb, worb_emb,
-        #                                           input_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
-
-        title_emb = self.dropout(self.word_embedding(title_text))
-        body_emb = self.dropout(self.word_embedding(body_text))
-        c = self.cast(title_emb, body_emb, body_emb, body_mask)
+        c = self.dropout(self.multihead_attention(word_emb, word_emb, word_emb,
+                                                  input_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
+        c = c[:, :self.max_title_len, :]
+        # title_emb = self.dropout(self.word_embedding(title_text))
+        # body_emb = self.dropout(self.word_embedding(body_text))
+        # c = self.cast(title_emb, body_emb, body_emb, body_mask)
 
         title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
