@@ -3,6 +3,38 @@ import sys, os, os.path
 import numpy as np
 import json
 from sklearn.metrics import roc_auc_score
+import torch
+from tqdm import tqdm
+
+
+def evaluation(model, test_dataloader):
+    aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
+    results = [[] for _ in range(len(test_dataloader))]
+
+    with torch.no_grad():
+        for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
+            scores = model(user_features, log_mask, news_features, label, compute_loss=False)
+            scores = scores.view(-1).cpu().numpy()
+            sub_scores = []
+            for e, val in enumerate(scores):
+                sub_scores.append([val, e])
+            sub_scores.sort(key=lambda x: x[0], reverse=True)
+            # result = [0 for _ in range(len(sub_scores))]
+            for j in range(len(sub_scores)):
+                results[idx][sub_scores[j][1]] = j + 1
+
+            label = label.view(-1).cpu().numpy()
+            auc, mrr, ndcg5, ndcg10 = scoring(label, results[idx])
+            aucs.append(auc)
+            mrrs.append(mrr)
+            ndcg5s.append(ndcg5)
+            ndcg10s.append(ndcg10)
+    auc = np.mean(aucs)
+    mrr = np.mean(mrrs)
+    ndcg5 = np.mean(ndcg5s)
+    ndcg10 = np.mean(ndcg10s)
+
+    return (auc, mrr, ndcg5, ndcg10), results
 
 
 def dcg_score(y_true, y_score, k=10):
@@ -90,29 +122,3 @@ def scoring(truth_f, sub_f):
         line_index += 1
 
     return np.mean(aucs), np.mean(mrrs), np.mean(ndcg5s), np.mean(ndcg10s)
-
-
-if __name__ == '__main__':
-    input_dir = sys.argv[1]
-    output_dir = sys.argv[2]
-
-    submit_dir = os.path.join(input_dir, 'res')
-    truth_dir = os.path.join(input_dir, 'ref')
-
-    if not os.path.isdir(submit_dir):
-        print("%s doesn't exist" % submit_dir)
-
-    if os.path.isdir(submit_dir) and os.path.isdir(truth_dir):
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-
-        output_filename = os.path.join(output_dir, 'scores.txt')
-        output_file = open(output_filename, 'w')
-
-        truth_file = open(os.path.join(truth_dir, "truth.txt"), 'r')
-        submission_answer_file = open(os.path.join(submit_dir, "prediction.txt"), 'r')
-
-        auc, mrr, ndcg, ndcg10 = scoring(truth_file, submission_answer_file)
-
-        output_file.write("AUC:{:.4f}\nMRR:{:.4f}\nnDCG@5:{:.4f}\nnDCG@10:{:.4f}".format(auc, mrr, ndcg, ndcg10))
-        output_file.close()
