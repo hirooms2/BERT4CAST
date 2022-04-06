@@ -7,36 +7,6 @@ import torch
 from tqdm import tqdm
 
 
-def evaluation(model, test_dataloader):
-    aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
-    results = [[] for _ in range(len(test_dataloader))]
-
-    with torch.no_grad():
-        for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
-            scores = model(user_features, log_mask, news_features, label, compute_loss=False)
-            scores = scores.view(-1).cpu().numpy()
-            sub_scores = []
-            for e, val in enumerate(scores):
-                sub_scores.append([val, e])
-            sub_scores.sort(key=lambda x: x[0], reverse=True)
-            # result = [0 for _ in range(len(sub_scores))]
-            for j in range(len(sub_scores)):
-                results[idx][sub_scores[j][1]] = j + 1
-
-            label = label.view(-1).cpu().numpy()
-            auc, mrr, ndcg5, ndcg10 = scoring(label, results[idx])
-            aucs.append(auc)
-            mrrs.append(mrr)
-            ndcg5s.append(ndcg5)
-            ndcg10s.append(ndcg10)
-    auc = np.mean(aucs)
-    mrr = np.mean(mrrs)
-    ndcg5 = np.mean(ndcg5s)
-    ndcg10 = np.mean(ndcg10s)
-
-    return (auc, mrr, ndcg5, ndcg10), results
-
-
 def dcg_score(y_true, y_score, k=10):
     order = np.argsort(y_score)[::-1]
     y_true = np.take(y_true, order[:k])
