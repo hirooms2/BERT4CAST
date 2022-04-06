@@ -135,21 +135,26 @@ class Context_Aware_Att(nn.Module):
     # Q    : [batch_size, len_q, dim]
     # K    : [batch_size, len_k, dim]
     # V    : [batch_size, len_k, dim]
-    # mask : [batch_size, len_k]
+    # title_mask : [batch_size, len_q]
+    # body_mask : [batch_size, len_k]
     # Output
     # out  : [batch_size, len_q, nb_head * size_per_head]
-    def forward(self, Q_seq, K_seq, V_seq, mask):
+    def forward(self, Q_seq, K_seq, V_seq, title_mask, body_mask):
         batch_size = Q_seq.size(0)
+        title_len = Q_seq.size(1)
+        body_len = Q_seq.size(2)
 
-        # K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
-        # V_seq = torch.cat([V_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
+        K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
+        V_seq = torch.cat([V_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
 
-        mask = mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, M]
+        mask = torch.cat([title_mask, body_mask], dim=1)  # [B, N+M]
+        mask = mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N+M]
+
         mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
 
         Q_seq = self.W_Q(Q_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N, nd]
-        K_seq = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, M, nd]
-        V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, M, nd]
+        K_seq = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
+        V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
 
         # [B, nh, N, nd] x [B, nh, nd, M] = [B, nh, N, M]
         context, attn = ScaledDotProductAttention(self.d_k)(
