@@ -55,18 +55,18 @@ class NewsEncoder(nn.Module):
         body_mask = body_mask.view(
             [batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
-        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
+        # title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
+        # body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
+        #
+        # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
+        # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
+        #
+        # title_emb = title_output.last_hidden_state
+        # body_emb = body_output.last_hidden_state
 
-        title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-
-        title_emb = title_output.last_hidden_state
-        body_emb = body_output.last_hidden_state
-
-        input_text = torch.cat([title_text, body_text], dim=1)
-        input_mask = torch.cat([title_mask, body_mask], dim=1)
-        bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
+        # input_text = torch.cat([title_text, body_text], dim=1)
+        # input_mask = torch.cat([title_mask, body_mask], dim=1)
+        bert_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
         word_emb = bert_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N, d]
 
         # worb_emb = self.dropout(self.word_embedding(input_text))
