@@ -17,7 +17,9 @@ class NewsEncoder(nn.Module):
         self.bert_model = bert_model
         self.word_embedding_path = word_embedding_path
         self.multihead_attention = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
-        self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        # self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        self.attention = AdditiveAttention(args.word_embedding_dim, args.attention_dim)
+
         self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim, args.news_dim)
         self.dropout = nn.Dropout(p=args.dropout_rate)
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
@@ -62,10 +64,11 @@ class NewsEncoder(nn.Module):
         title_emb = title_output.last_hidden_state
         body_emb = body_output.last_hidden_state
 
-        # input_text = torch.cat([title_text, body_text], dim=1)
-        # input_mask = torch.cat([title_mask, body_mask], dim=1)
-        # bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
-        # word_emb = bert_output.last_hidden_state[:, :, :]  # [B * L, N, d]
+        input_text = torch.cat([title_text, body_text], dim=1)
+        input_mask = torch.cat([title_mask, body_mask], dim=1)
+        bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
+        word_emb = bert_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N, d]
+
         # worb_emb = self.dropout(self.word_embedding(input_text))
         # c = self.dropout(self.multihead_attention(word_emb, word_emb, word_emb,
         #                                           input_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
@@ -73,9 +76,10 @@ class NewsEncoder(nn.Module):
         # title_emb = self.dropout(self.word_embedding(title_text))
         # body_emb = self.dropout(self.word_embedding(body_text))
 
-        c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)
+        # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)
 
-        title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
+        title_rep = self.attention(word_emb, title_mask).view(batch_size, news_num,
+                                                              -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
 
         # title_rep = self.feature_fusion(title_rep, category, sub_category)  # [batch_size, news_num, hidden_size+a]

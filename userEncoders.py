@@ -9,7 +9,9 @@ class UserEncoder(torch.nn.Module):
     def __init__(self, args):
         super(UserEncoder, self).__init__()
         self.args = args
-        self.news_dim = args.n_heads * 20
+        # self.news_dim = args.n_heads * 20
+        self.news_dim = args.word_embedding_dim
+
         self.affine1 = nn.Linear(2 * self.news_dim, args.attention_dim)
         self.affine2 = nn.Linear(args.attention_dim, 1)
 
