@@ -149,6 +149,7 @@ class Context_Aware_Att(nn.Module):
 
         mask = torch.cat([title_mask, body_mask], dim=1)  # [B, N+M]
         mask = mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N+M]
+        mask = mask * title_mask.unsqueeze(-1)
 
         mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
 
