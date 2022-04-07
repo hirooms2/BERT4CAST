@@ -55,8 +55,8 @@ class NewsEncoder(nn.Module):
         body_mask = body_mask.view(
             [batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        # title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
-        # body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
+        title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
+        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
         #
         # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
         # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
