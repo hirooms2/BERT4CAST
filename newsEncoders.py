@@ -14,11 +14,15 @@ class NewsEncoder(nn.Module):
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
 
+        self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim))
+        torch.nn.init.normal_(self.masked_token_emb)
+        self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
+
         self.bert_model = bert_model
         self.word_embedding_path = word_embedding_path
         self.multihead_attention = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
-        # self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
-        self.attention = AdditiveAttention(args.word_embedding_dim, args.attention_dim)
+        self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        # self.attention = AdditiveAttention(args.word_embedding_dim, args.attention_dim)
 
         self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim, args.news_dim)
         self.dropout = nn.Dropout(p=args.dropout_rate)
@@ -58,32 +62,86 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
 
+        title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
+        body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
+
+        # title_emb = self.dropout(self.multihead_attention(title_emb, title_emb, title_emb, title_mask))
+        # body_emb = self.dropout(self.multihead_attention(body_emb, body_emb, body_emb, body_mask))
+
+        all_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
+        all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
+
+        # masked_word_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
+
         # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
         # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        #
         # title_emb = title_output.last_hidden_state
         # body_emb = body_output.last_hidden_state
-
-        input_text = torch.cat([title_text, body_text], dim=1)
-        input_mask = torch.cat([title_mask, body_mask], dim=1)
-        bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
-        word_emb = bert_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N, d]
+        # input_emb = torch.cat([title_text, body_text], dim=1)
+        # input_mask = torch.cat([title_mask, body_mask], dim=1)
+        # bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
+        # word_emb = bert_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N, d]
+        # word_emb = self.word_embedding(input_text)
 
         # worb_emb = self.dropout(self.word_embedding(input_text))
-        # c = self.dropout(self.multihead_attention(word_emb, word_emb, word_emb,
-        #                                           input_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
-        # c = c[:, :self.max_title_len, :]
+        c = self.dropout(self.multihead_attention(all_emb, all_emb, all_emb,
+                                                  all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
+        c = c[:, :self.max_title_len, :]
+
         # title_emb = self.dropout(self.word_embedding(title_text))
         # body_emb = self.dropout(self.word_embedding(body_text))
+        # ctx_emb = self.cast(word_emb, word_emb, word_emb, title_mask, body_mask)  # [B * L, N, d]
 
-        # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)
-
-        title_rep = self.attention(word_emb, title_mask).view(batch_size, news_num,
-                                                              -1)  # [batch_size, news_num, hidden_size]
+        title_rep = self.attention(c, title_mask).view(batch_size, news_num,
+                                                       -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
-
         # title_rep = self.feature_fusion(title_rep, category, sub_category)  # [batch_size, news_num, hidden_size+a]
         return title_rep
+
+    def forward_lm(self, news_features):
+        title_text = news_features[0]
+        title_mask = news_features[1]
+        body_text = news_features[2]
+        body_mask = news_features[3]
+        category = news_features[4]
+        sub_category = news_features[5]
+
+        batch_size = category.size(0)
+        news_num = category.size(1)
+
+        title_mask = title_mask.view(
+            [batch_size * news_num, self.max_title_len])  # [B * L, N]
+        body_mask = body_mask.view(
+            [batch_size * news_num, self.max_body_len])  # [B * L, M]
+        all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
+
+        title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
+        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]g
+
+        lens = torch.sum(title_mask, dim=1, keepdim=True)
+        sampling_prob = title_mask / (lens + 1e-10)
+        masked_index = sampling_prob.multinomial(num_samples=1, replacement=True)
+        masked_index = masked_index.squeeze(1)
+        masked_voca_id = title_text.clone().detach()[torch.arange(batch_size * news_num), masked_index]
+
+        title_masked_emb = self.word_embedding(title_text)
+        title_masked_emb[torch.arange(batch_size * news_num), masked_index] = self.masked_token_emb
+
+        body_emb = self.word_embedding(body_text)  # [B * L, M, d]
+
+        masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
+
+        c_masked = self.dropout(self.multihead_attention(masked_emb, masked_emb, masked_emb,
+                                                         all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
+        c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
+        c_masked = self.linear_output(c_masked)
+
+        # Loss_LM 만드는 부분
+        b = self.word_embedding.weight[:]
+        score_lm = torch.matmul(c_masked, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
+        loss_lm = nn.CrossEntropyLoss(reduction='mean')(score_lm, masked_voca_id)
+
+        return loss_lm
 
     # Input
     # news_representation : [batch_size, news_num, unfused_news_embedding_dim]

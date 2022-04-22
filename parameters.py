@@ -12,12 +12,12 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='MIND/small')
     parser.add_argument('--read_text', action='store_false')
     parser.add_argument("--npratio", type=int, default=4)
-    parser.add_argument('--pretrain', type=str, default='bert')
+    parser.add_argument('--pretrain', type=str, default='glove')
 
     parser.add_argument('--n_layer', type=int, default=12)
     parser.add_argument('--max_hist_len', type=int, default=50)
     parser.add_argument('--max_title_len', type=int, default=30)
-    parser.add_argument('--max_body_len', type=int, default=80)
+    parser.add_argument('--max_body_len', type=int, default=50)
     parser.add_argument('--max_abstract_len', type=int, default=80)
     parser.add_argument('--vocab_size', type=int, default=30522)
 
@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--subcategory_embedding_dim', type=int, default=50, help='SubCategory embedding dimension')
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
     parser.add_argument('--attention_dim', type=int, default=200, help="Attention dimension")
-    parser.add_argument('--word_embedding_dim', type=int, default=768, help='Word embedding dimension')
+    parser.add_argument('--word_embedding_dim', type=int, default=300, help='Word embedding dimension')
     parser.add_argument('--glove_dim', type=int, default=300, help='Word embedding dimension')
 
     parser.add_argument('--cnn_method', type=str, default='naive', choices=['naive', 'group3', 'group4', 'group5'],

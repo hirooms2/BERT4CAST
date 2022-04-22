@@ -75,10 +75,12 @@ def read_news(data_path, args, tokenizer):
                 index += 1
 
                 title = title.lower()
-                title = tokenizer(title, max_length=args.max_title_len, padding='max_length', truncation=True)
+                title = tokenizer(title, max_length=args.max_title_len, padding='max_length', truncation=True,
+                                  add_special_tokens=False)
 
                 body = body.lower()[:2000]
-                body = tokenizer(body, max_length=args.max_body_len, padding='max_length', truncation=True)
+                body = tokenizer(body, max_length=args.max_body_len, padding='max_length', truncation=True,
+                                 add_special_tokens=False)
 
                 categories.append(category)
                 subcategories.append(subcategory)
