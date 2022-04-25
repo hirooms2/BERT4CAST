@@ -64,7 +64,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 
         with torch.no_grad():
             for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores = model(user_features, log_mask, news_features, label, compute_loss=False)
+                scores, _ = model(user_features, log_mask, news_features, label, compute_loss=False)
+
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
                 for e, val in enumerate(scores):
@@ -139,7 +140,14 @@ def test(args, model, test_dataloader):
 
     with torch.no_grad():
         for idx, (log_ids, log_mask, input_ids, labels) in enumerate(tqdm(test_dataloader)):
-            scores = model(input_ids, log_ids, log_mask, labels, compute_loss=False)
+            scores, mlm = model(input_ids, log_ids, log_mask, labels, compute_loss=False)
+            score_lm, masked_index = mlm
+
+            ############### Decoding ###################
+            # original title, masked idx, top@5 words
+            # Needs to receive word_dict
+            ############################################
+
             scores = scores.view(-1).cpu().numpy()
             sub_scores = []
 

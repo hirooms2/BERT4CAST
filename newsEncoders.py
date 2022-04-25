@@ -16,7 +16,8 @@ class NewsEncoder(nn.Module):
 
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim))
         torch.nn.init.normal_(self.masked_token_emb)
-        self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
+        # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
+        self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size)
 
         self.bert_model = bert_model
         self.word_embedding_path = word_embedding_path
@@ -118,6 +119,7 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]g
 
+        # only for stopwords???
         lens = torch.sum(title_mask, dim=1, keepdim=True)
         sampling_prob = title_mask / (lens + 1e-10)
         masked_index = sampling_prob.multinomial(num_samples=1, replacement=True)
@@ -129,20 +131,21 @@ class NewsEncoder(nn.Module):
 
         body_emb = self.word_embedding(body_text)  # [B * L, M, d]
 
-        masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
-
+        # masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
         # c_masked = self.dropout(self.multihead_attention(masked_emb, masked_emb, masked_emb,
         #                                                  all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
         # c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
+
         c_masked = self.cast(title_masked_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
+
+        # check point::: [d, V]???
         c_masked = self.linear_output(c_masked)
 
         # Loss_LM 만드는 부분
         b = self.word_embedding.weight[:]
         score_lm = torch.matmul(c_masked, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
-        loss_lm = nn.CrossEntropyLoss(reduction='mean')(score_lm, masked_voca_id)
 
-        return loss_lm
+        return score_lm, masked_index, masked_voca_id
 
     # Input
     # news_representation : [batch_size, news_num, unfused_news_embedding_dim]
