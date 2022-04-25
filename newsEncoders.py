@@ -139,11 +139,11 @@ class NewsEncoder(nn.Module):
         c_masked = self.cast(title_masked_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
         # check point::: [d, V]???
-        c_masked = self.linear_output(c_masked)
+        score_lm = self.linear_output(c_masked)
 
         # Loss_LM 만드는 부분
-        b = self.word_embedding.weight[:]
-        score_lm = torch.matmul(c_masked, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
+        # b = self.word_embedding.weight[:]
+        # score_lm = torch.matmul(c_masked, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
 
         return score_lm, masked_index, masked_voca_id
 
