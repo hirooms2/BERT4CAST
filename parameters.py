@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
 
     parser.add_argument('--epoch', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=3)
+    parser.add_argument('--batch_size', type=int, default=32)
 
     parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ')  # reg_term
 

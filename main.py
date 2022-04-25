@@ -20,6 +20,12 @@ from datetime import datetime
 
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+def save_best_results(path,args,best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10):
+    with open(path,'a',encoding='utf-8') as b_result_f:
+        for i, v in vars(args).items():
+            b_result_f.write(f'{i}:{v} || ')
+        b_result_f.write('\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\n'.format(best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
+        b_result_f.write(f'THE END : {get_time_kst()} \n')
 
 
 def train(args, model, train_dataloader, dev_dataloader):
@@ -102,8 +108,9 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
-            result_f.write(
-                'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+# LM Loss 기록
+            result_f.write('LM_Loss = {:.4f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(total_loss_lm,auc, mrr, ndcg5, ndcg10))
+
             result_f.write(get_time_kst())
             result_f.write('\n')
 
@@ -125,6 +132,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             '\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(
                 best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
         result_f.write(f'THE END : {get_time_kst()} \n')
+    save_best_results(best_results_file_path, args, best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10)
 
 
 def test(args, model, test_dataloader):
