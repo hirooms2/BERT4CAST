@@ -108,6 +108,7 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
+# LM Loss 기록
             result_f.write('LM_Loss = {:.4f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(total_loss_lm,auc, mrr, ndcg5, ndcg10))
 
             result_f.write(get_time_kst())
