@@ -41,7 +41,7 @@ class Model(nn.Module):
         if compute_loss:
 
             loss = self.criterion(score, label)
-            loss += 0.1 * loss_lm
+            loss += self.args.reg_term * loss_lm ## lm loss , Regularization Term
             # loss = loss_ctr + args.lambda * loss_lm
             return loss, score
         else:

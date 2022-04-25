@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--n_layer', type=int, default=12)
     parser.add_argument('--max_hist_len', type=int, default=50)
     parser.add_argument('--max_title_len', type=int, default=30)
-    parser.add_argument('--max_body_len', type=int, default=50)
+    parser.add_argument('--max_body_len', type=int, default=100)
     parser.add_argument('--max_abstract_len', type=int, default=80)
     parser.add_argument('--vocab_size', type=int, default=30522)
 
@@ -28,7 +28,10 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
 
     parser.add_argument('--epoch', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=3)
+    parser.add_argument('--batch_size', type=int, default=32)
+    
+    parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ') # reg_term
+
 
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
     parser.add_argument('--n_heads', type=int, default=20, help='Head number of multi-head self-attention')
@@ -54,6 +57,6 @@ def parse_args():
     logging.info(args)
     return args
 
-
+#main
 if __name__ == "__main__":
     args = parse_args()
