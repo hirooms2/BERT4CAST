@@ -17,7 +17,7 @@ class NewsEncoder(nn.Module):
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim))
         torch.nn.init.normal_(self.masked_token_emb)
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size)
+        self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size, bias=False)
 
         self.bert_model = bert_model
         self.word_embedding_path = word_embedding_path
@@ -137,7 +137,7 @@ class NewsEncoder(nn.Module):
         # c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
 
         c_masked = self.cast(title_masked_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
-
+        c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
         # check point::: [d, V]???
         c_masked = self.linear_output(c_masked)
 
