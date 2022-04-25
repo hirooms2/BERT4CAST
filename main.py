@@ -20,40 +20,43 @@ from datetime import datetime
 
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
-    
+
 
 def train(args, model, train_dataloader, dev_dataloader):
     # Only support title Turing now
     logging.info('Training...')
     if not os.path.exists('./model'): os.mkdir('./model')
-    
+
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
     results_file_path = './results/train.txt'
     # parameters
-    with open(results_file_path,'a',encoding='utf-8') as result_f:
-        result_f.write('\n=================================================\n==================== train =====================\n')
+    with open(results_file_path, 'a', encoding='utf-8') as result_f:
+        result_f.write(
+            '\n=================================================\n==================== train =====================\n')
         result_f.write(get_time_kst())
         result_f.write('\n')
-        for i,v in vars(args).items():
+        for i, v in vars(args).items():
             result_f.write(f'{i}:{v} || ')
         result_f.write('\n')
-        
+
     best_auc, best_epoch = 0, 0
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
 
     for ep in range(args.epoch):
-        total_loss = 0.0
+        total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
-            loss, _ = model(user_features, log_mask, news_features, label)
+            loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
+            total_loss_lm += loss_lm.data.float()
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
         total_loss /= len(train_dataloader)
         print(ep + 1, total_loss)
-
+        print('Loss_LM:\t%.4f' % total_loss_lm)
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
 
@@ -91,14 +94,15 @@ def train(args, model, train_dataloader, dev_dataloader):
             if ep == 0:
                 device_ep0 = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
                 result_f.write('Using device: {device_ep0}\t')
-                #Additional Info when using cuda
+                # Additional Info when using cuda
                 if device_ep0.type == 'cuda':
                     result_f.write(torch.cuda.get_device_name(0))
                     result_f.write('\n <Memory Usage> \n')
-                    result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0)/1024**3,1)} GB\t||\t')
-                    result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0)/1024**3,1)} GB\n')
+                    result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
+                    result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
-            result_f.write('AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+            result_f.write(
+                'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
             result_f.write(get_time_kst())
             result_f.write('\n')
 
@@ -114,14 +118,12 @@ def train(args, model, train_dataloader, dev_dataloader):
 
         print('Best Epoch:\t%f\tBest auc:\t%f' % (best_epoch, best_auc))
 
-    with open(results_file_path,'a',encoding='utf-8') as result_f:
+    with open(results_file_path, 'a', encoding='utf-8') as result_f:
         # result_f.write(f'\nBEST_SCORE epoch: {int(best_epoch)}\tAUC: {best_auc}\tMRR: {best_mrr}\tNDCG@5: {best_ndcg5}\tNDCG@10: {best_ndcg10}\n')
-        result_f.write('\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
+        result_f.write(
+            '\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(
+                best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
         result_f.write(f'THE END : {get_time_kst()} \n')
-    
-
-
-
 
 
 def test(args, model, test_dataloader):
