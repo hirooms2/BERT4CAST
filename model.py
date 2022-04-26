@@ -39,7 +39,6 @@ class Model(nn.Module):
         score = (news_vec * user_vector).sum(dim=2)  # dot-product
 
         if compute_loss:
-
             loss = self.criterion(score, label)
             loss_lm = self.criterion(score_lm, masked_voca_id)
             loss += self.args.reg_term * loss_lm  ## lm loss , Regularization Term

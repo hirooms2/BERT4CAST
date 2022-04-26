@@ -27,10 +27,10 @@ def parse_args():
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
 
-    parser.add_argument('--epoch', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=3)
+    parser.add_argument('--epoch', type=int, default=1)
+    parser.add_argument('--batch_size', type=int, default=16)
 
-    parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ')  # reg_term
+    parser.add_argument('--reg_term', type=float, default=0.1, help='Regularization Term (Lambda) ')  # reg_term
 
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
     parser.add_argument('--n_heads', type=int, default=20, help='Head number of multi-head self-attention')
