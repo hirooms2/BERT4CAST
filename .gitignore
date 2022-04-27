@@ -1,7 +1,8 @@
 /datasets/
 *.xml
 .idea/
-
+model/BERT-CAST
+*.ipynb
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
