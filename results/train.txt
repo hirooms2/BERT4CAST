@@ -1,0 +1,90 @@
+
+=================================================
+==================== train =====================
+2022-04-26 00:27:57
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:1.0 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 26300.0430	AUC = 0.6359	MRR = 0.2949	nDCG@5 = 0.3231	nDCG@10 = 0.3862	2022-04-26 00:40:30
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 00:53:08
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 01:05:33
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 01:17:59
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 01:30:25
+
+BEST_SCORE : epoch: 0	AUC = 0.6359	MRR = 0.2949	nDCG@5 = 0.3231	nDCG@10 = 0.3862	THE END : 2022-04-26 01:30:25 
+
+=================================================
+==================== train =====================
+2022-04-26 01:31:10
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:0.5 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 26754.3848	AUC = 0.6445	MRR = 0.3048	nDCG@5 = 0.3345	nDCG@10 = 0.3971	2022-04-26 01:43:41
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = 20174.5703	AUC = 0.6592	MRR = 0.3139	nDCG@5 = 0.3473	nDCG@10 = 0.4092	2022-04-26 01:56:17
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = 18284.9492	AUC = 0.6677	MRR = 0.3187	nDCG@5 = 0.3533	nDCG@10 = 0.4148	2022-04-26 02:08:48
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 02:21:15
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 02:33:39
+
+BEST_SCORE : epoch: 2	AUC = 0.6677	MRR = 0.3187	nDCG@5 = 0.3533	nDCG@10 = 0.4148	THE END : 2022-04-26 02:33:39 
+
+=================================================
+==================== train =====================
+2022-04-26 02:34:21
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:0.2 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 27536.0820	AUC = 0.6521	MRR = 0.3075	nDCG@5 = 0.3407	nDCG@10 = 0.4017	2022-04-26 02:46:53
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = 20302.9785	AUC = 0.6625	MRR = 0.3140	nDCG@5 = 0.3484	nDCG@10 = 0.4093	2022-04-26 02:59:25
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = 18262.6465	AUC = 0.6676	MRR = 0.3173	nDCG@5 = 0.3520	nDCG@10 = 0.4131	2022-04-26 03:11:59
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 03:24:35
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = nan	AUC = 0.4989	MRR = 0.2178	nDCG@5 = 0.2230	nDCG@10 = 0.2857	2022-04-26 03:37:03
+
+BEST_SCORE : epoch: 2	AUC = 0.6676	MRR = 0.3173	nDCG@5 = 0.3520	nDCG@10 = 0.4131	THE END : 2022-04-26 03:37:03 
+
+=================================================
+==================== train =====================
+2022-04-26 03:37:44
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:0.1 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 28086.9492	AUC = 0.6538	MRR = 0.3106	nDCG@5 = 0.3435	nDCG@10 = 0.4046	2022-04-26 03:50:13
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = 20374.2773	AUC = 0.6598	MRR = 0.3107	nDCG@5 = 0.3439	nDCG@10 = 0.4057	2022-04-26 04:02:46
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = 18251.3340	AUC = 0.6649	MRR = 0.3143	nDCG@5 = 0.3494	nDCG@10 = 0.4106	2022-04-26 04:15:16
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = 17124.1250	AUC = 0.6678	MRR = 0.3152	nDCG@5 = 0.3505	nDCG@10 = 0.4119	2022-04-26 04:27:42
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = 16369.6924	AUC = 0.6709	MRR = 0.3197	nDCG@5 = 0.3550	nDCG@10 = 0.4162	2022-04-26 04:40:10
+
+BEST_SCORE : epoch: 4	AUC = 0.6709	MRR = 0.3197	nDCG@5 = 0.3550	nDCG@10 = 0.4162	THE END : 2022-04-26 04:40:12 
+
+=================================================
+==================== train =====================
+2022-04-26 04:40:52
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:0.01 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 32548.8477	AUC = 0.6491	MRR = 0.3044	nDCG@5 = 0.3374	nDCG@10 = 0.3992	2022-04-26 04:53:19
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = 25074.3223	AUC = 0.6578	MRR = 0.3102	nDCG@5 = 0.3419	nDCG@10 = 0.4049	2022-04-26 05:05:49
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = 21464.7578	AUC = 0.6647	MRR = 0.3163	nDCG@5 = 0.3492	nDCG@10 = 0.4120	2022-04-26 05:18:15
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = 19666.9023	AUC = 0.6640	MRR = 0.3134	nDCG@5 = 0.3453	nDCG@10 = 0.4085	2022-04-26 05:30:43
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = 18558.9316	AUC = 0.6684	MRR = 0.3146	nDCG@5 = 0.3473	nDCG@10 = 0.4107	2022-04-26 05:43:07
+
+BEST_SCORE : epoch: 4	AUC = 0.6684	MRR = 0.3146	nDCG@5 = 0.3473	nDCG@10 = 0.4107	THE END : 2022-04-26 05:43:09 
+
+=================================================
+==================== train =====================
+2022-04-26 05:43:50
+mode:train || name:BERT-CAST || bert:bert-base-uncased || dataset:MIND/small || read_text:True || npratio:4 || pretrain:glove || n_layer:12 || max_hist_len:50 || max_title_len:30 || max_body_len:100 || max_abstract_len:80 || vocab_size:30522 || negative_sample_num:4 || seed:-1 || device_id:0 || lr:0.0001 || weight_decay:0 || epoch:5 || batch_size:32 || reg_term:0.0 || hidden_size:400 || n_heads:20 || n_dim:20 || news_dim:64 || position_dim:300 || head_num:20 || category_embedding_dim:50 || subcategory_embedding_dim:50 || dropout_rate:0.2 || attention_dim:200 || word_embedding_dim:300 || glove_dim:300 || cnn_method:naive || cnn_kernel_num:400 || cnn_window_size:3 || 
+Using device: {device_ep0}	NVIDIA A100-PCIE-40GB
+ <Memory Usage> 
+Allocated: 0.7 GB	||	Cached: 8.6 GB
+Epoch 1 : dev done 	 Dev criterions 	LM_Loss = 49613.8984	AUC = 0.6465	MRR = 0.3014	nDCG@5 = 0.3344	nDCG@10 = 0.3961	2022-04-26 05:56:21
+Epoch 2 : dev done 	 Dev criterions 	LM_Loss = 49618.1875	AUC = 0.6632	MRR = 0.3132	nDCG@5 = 0.3478	nDCG@10 = 0.4086	2022-04-26 06:08:58
+Epoch 3 : dev done 	 Dev criterions 	LM_Loss = 49618.3867	AUC = 0.6656	MRR = 0.3172	nDCG@5 = 0.3486	nDCG@10 = 0.4112	2022-04-26 06:21:32
+Epoch 4 : dev done 	 Dev criterions 	LM_Loss = 49620.2773	AUC = 0.6654	MRR = 0.3121	nDCG@5 = 0.3454	nDCG@10 = 0.4087	2022-04-26 06:34:07
+Epoch 5 : dev done 	 Dev criterions 	LM_Loss = 49621.3242	AUC = 0.6647	MRR = 0.3107	nDCG@5 = 0.3427	nDCG@10 = 0.4059	2022-04-26 06:46:39
+
+BEST_SCORE : epoch: 2	AUC = 0.6656	MRR = 0.3172	nDCG@5 = 0.3486	nDCG@10 = 0.4112	THE END : 2022-04-26 06:46:39 

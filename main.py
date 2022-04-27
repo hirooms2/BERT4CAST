@@ -36,6 +36,8 @@ def train(args, model, train_dataloader, dev_dataloader):
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
     results_file_path = './results/train.txt'
+    best_results_file_path = './results/train_best.txt' # only Best result 파일
+
     # parameters
     with open(results_file_path, 'a', encoding='utf-8') as result_f:
         result_f.write(
@@ -122,7 +124,9 @@ def train(args, model, train_dataloader, dev_dataloader):
             best_ndcg10 = ndcg10
 
             print('save the model')
-            torch.save({model.name: model.state_dict()}, './model/' + model.name)
+            # torch.save({model.name: model.state_dict()}, './model/' + model.name) # original save
+            torch.save({model.name: model.state_dict()}, './model/' + model.name + args.reg_term) # for reg_term
+
 
         print('Best Epoch:\t%f\tBest auc:\t%f' % (best_epoch, best_auc))
 
