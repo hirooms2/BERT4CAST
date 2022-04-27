@@ -20,6 +20,12 @@ from datetime import datetime
 
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+def save_best_results(path,args,best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10):
+    with open(path,'a',encoding='utf-8') as b_result_f:
+        for i, v in vars(args).items():
+            b_result_f.write(f'{i}:{v} || ')
+        b_result_f.write('\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\n'.format(best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
+        b_result_f.write(f'THE END : {get_time_kst()} \n')
 
 
 def train(args, model, train_dataloader, dev_dataloader):
@@ -64,7 +70,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 
         with torch.no_grad():
             for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores = model(user_features, log_mask, news_features, label, compute_loss=False)
+                scores, _ = model(user_features, log_mask, news_features, label, compute_loss=False)
+
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
                 for e, val in enumerate(scores):
@@ -101,8 +108,9 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
-            result_f.write(
-                'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+# LM Loss 기록
+            result_f.write('LM_Loss = {:.4f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(total_loss_lm,auc, mrr, ndcg5, ndcg10))
+
             result_f.write(get_time_kst())
             result_f.write('\n')
 
@@ -114,7 +122,9 @@ def train(args, model, train_dataloader, dev_dataloader):
             best_ndcg10 = ndcg10
 
             print('save the model')
-            torch.save({model.name: model.state_dict()}, './model/' + model.name)
+            # torch.save({model.name: model.state_dict()}, './model/' + model.name) # original save
+            torch.save({model.name: model.state_dict()}, './model/' + model.name + args.reg_term) # for reg_term
+
 
         print('Best Epoch:\t%f\tBest auc:\t%f' % (best_epoch, best_auc))
 
@@ -124,9 +134,10 @@ def train(args, model, train_dataloader, dev_dataloader):
             '\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(
                 best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
         result_f.write(f'THE END : {get_time_kst()} \n')
+    save_best_results(best_results_file_path, args, best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10)
 
 
-def test(args, model, test_dataloader):
+def test(args, model, test_dataloader, tokenizer):
     print('test mode start')
     test_model_path = './model/' + model.name
     model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[model.name])
@@ -137,10 +148,16 @@ def test(args, model, test_dataloader):
     result_file = './results/prediction.txt'
     results = [[] for _ in range(len(test_dataloader))]
 
+    result_lm_file = './results/lm.txt'
+    results_lm = []
+
     with torch.no_grad():
-        for idx, (log_ids, log_mask, input_ids, labels) in enumerate(tqdm(test_dataloader)):
-            scores = model(input_ids, log_ids, log_mask, labels, compute_loss=False)
+        for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
+            scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
+            score_lm, masked_index = mlm
+
             scores = scores.view(-1).cpu().numpy()
+
             sub_scores = []
 
             for e, val in enumerate(scores):
@@ -150,9 +167,31 @@ def test(args, model, test_dataloader):
             for j in range(len(sub_scores)):
                 results[idx][sub_scores[j][1]] = j + 1
 
+            # for Analyzing Language Model
+            title_text = news_features[0].squeeze(0).cpu().numpy()
+            masked_index = masked_index.cpu().numpy()
+
+            title_mask = news_features[1].squeeze(0)
+            title_lens = torch.sum(title_mask, dim=1)
+            title_lens = title_lens.cpu().numpy()
+
+            sub_scores = score_lm.topk(10)[1]
+            sub_scores = sub_scores.cpu().numpy()
+
+            for (title, midx, s_score, l) in zip(title_text, masked_index, sub_scores, title_lens):
+                text = tokenizer.convert_ids_to_tokens(title[:l])
+                target_word = text[midx]
+                predicted_word = tokenizer.decode(s_score, skip_special_tokens=True)
+                result_str = "%s\t[%s]\t%s\n" % (' '.join(text), target_word, predicted_word)
+                results_lm.append(result_str)
+
     with open(result_file, 'w', encoding='utf-8') as result_f:
         for i, result in enumerate(results):
             result_f.write(('' if i == 0 else '\n') + str(i + 1) + ' ' + str(result).replace(' ', ''))
+
+    with open(result_lm_file, 'w', encoding='utf-8') as result_f:
+        for i, result in enumerate(results_lm):
+            result_f.write(('' if i == 0 else '\n') + str(i + 1) + '.\t' + result)
 
 
 def print_num_param(model):
@@ -229,4 +268,4 @@ if __name__ == '__main__':
             mode='test'
         )
         test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False)
-        test(args, model, test_dataloader)
+        test(args, model, test_dataloader, tokenizer)

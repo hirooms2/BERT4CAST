@@ -28,7 +28,7 @@ class Model(nn.Module):
         """
         # input_ids: batch, history, num_words
         news_vec = self.news_encoder(news_features)  # [batch_size, news_num, hidden_size+c]
-        loss_lm = self.news_encoder.forward_lm(news_features)
+        score_lm, masked_index, masked_voca_id = self.news_encoder.forward_lm(news_features)
 
         # batch_size, news_dim
         log_vec = self.news_encoder(user_features)  # [batch_size, hist_len, hidden_size+c]
@@ -39,10 +39,10 @@ class Model(nn.Module):
         score = (news_vec * user_vector).sum(dim=2)  # dot-product
 
         if compute_loss:
-
             loss = self.criterion(score, label)
+            loss_lm = self.criterion(score_lm, masked_voca_id)
             loss += self.args.reg_term * loss_lm  ## lm loss , Regularization Term
             # loss = loss_ctr + args.lambda * loss_lm
             return loss, loss_lm, score
         else:
-            return score
+            return score, (score_lm, masked_index)
