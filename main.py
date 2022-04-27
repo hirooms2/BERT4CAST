@@ -17,7 +17,7 @@ from utils import scoring
 
 from pytz import timezone
 from datetime import datetime
-
+##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
 def save_best_results(path,args,best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10):
