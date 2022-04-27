@@ -144,10 +144,10 @@ class Context_Aware_Att(nn.Module):
         title_len = Q_seq.size(1)
         body_len = Q_seq.size(2)
 
-        K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
+        K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d] Body, Title
         V_seq = torch.cat([V_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
 
-        mask = torch.cat([title_mask, body_mask], dim=1)  # [B, N+M]
+        mask = torch.cat([body_mask, title_mask], dim=1)  # [B, N+M]
         mask = mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N+M]
         mask = mask * title_mask.unsqueeze(-1)
 

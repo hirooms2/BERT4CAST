@@ -14,7 +14,7 @@ class NewsEncoder(nn.Module):
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
 
-        self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim))
+        self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
         torch.nn.init.normal_(self.masked_token_emb)
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size, bias=False)
@@ -128,6 +128,7 @@ class NewsEncoder(nn.Module):
 
         title_masked_emb = self.dropout(self.word_embedding(title_text))
         title_masked_emb[torch.arange(batch_size * news_num), masked_index] = self.masked_token_emb
+        # title_masked_emb[:, 0] = self.masked_token_emb
         body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
         # masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
@@ -137,6 +138,8 @@ class NewsEncoder(nn.Module):
 
         c_masked = self.cast(title_masked_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
+        # c_masked = c_masked[:, 0]
+
         # check point::: [d, V]???
         # score_lm = self.linear_output(c_masked)
 
