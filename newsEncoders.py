@@ -32,10 +32,10 @@ class NewsEncoder(nn.Module):
 
         self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim, args.news_dim)
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
-        #                               args.max_body_len)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.n_heads * args.n_dim, args.max_title_len,
+        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
                                       args.max_body_len)
+        # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.n_heads * args.n_dim, args.max_title_len,
+        #                               args.max_body_len)
 
         if args.pretrain == 'glove':
             with open(self.word_embedding_path, 'rb') as word_embedding_f:
