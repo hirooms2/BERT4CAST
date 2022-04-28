@@ -3,6 +3,9 @@
 .idea/
 model/BERT-CAST
 *.ipynb
+hytester.py
+thtester.py
+*.sh
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
