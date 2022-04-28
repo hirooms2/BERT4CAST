@@ -150,7 +150,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
 def test(args, model, test_dataloader, tokenizer):
     print('test mode start')
-    test_model_path = './model/' + model.name
+    test_model_path = './model/' + model.name + str(args.reg_term)
     model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[model.name])
     model.cuda(args.device_id)
 
