@@ -3,7 +3,7 @@ import torch.nn as nn
 import pickle
 from layers import MultiHeadAttention, AdditiveAttention, Context_Aware_Att, Conv1D
 
-
+# TH
 class NewsEncoder(nn.Module):
     def __init__(self, args, bert_model, word_embedding_path):
         super(NewsEncoder, self).__init__()
