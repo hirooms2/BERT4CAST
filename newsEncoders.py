@@ -131,7 +131,7 @@ class NewsEncoder(nn.Module):
         title_masked_emb = self.dropout(self.word_embedding(title_text))
         title_masked_emb[torch.arange(batch_size * news_num), masked_index] = self.masked_token_emb
         # title_masked_emb[:, 0] = self.masked_token_emb
-        # body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
+        body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
         # masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
         # c_masked = self.dropout(self.multihead_attention(masked_emb, masked_emb, masked_emb,
@@ -140,7 +140,7 @@ class NewsEncoder(nn.Module):
 
         title_masked_emb = self.dropout(
             self.multihead_attention(title_masked_emb, title_masked_emb, title_masked_emb, title_mask))
-        body_emb = self.dropout(self.multihead_attention(body_emb, body_emb, body_emb, body_mask))
+        # body_emb = self.dropout(self.multihead_attention(body_emb, body_emb, body_emb, body_mask))
 
         c_masked = self.dropout(self.cast(title_masked_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
