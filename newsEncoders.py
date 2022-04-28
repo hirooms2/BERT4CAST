@@ -73,8 +73,8 @@ class NewsEncoder(nn.Module):
         title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
         body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
-        title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
-        body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
+        # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
+        # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
 
         # all_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
         # all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
@@ -143,8 +143,8 @@ class NewsEncoder(nn.Module):
         #                                                  all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
         # c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
 
-        title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
-        body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
+        # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
+        # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
 
         c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
