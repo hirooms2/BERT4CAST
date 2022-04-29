@@ -5,7 +5,7 @@ import logging
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--mode', type=str, default='train')
+    parser.add_argument('--mode', type=str, default='test')
     parser.add_argument('--name', type=str, default='BERT-CAST')
     parser.add_argument('--bert', type=str, default='bert-base-uncased',
                         choices=['bert-base-uncased', 'albert-base-v2'])

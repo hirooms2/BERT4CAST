@@ -190,8 +190,7 @@ def test(args, model, test_dataloader, tokenizer):
             sub_scores = sub_scores.cpu().numpy()
 
             for (title, midx, s_score, l) in zip(title_text, masked_index, sub_scores, title_lens):
-                hit.append(np.isin(midx, s_score))
-
+                hit.append(np.isin(title[midx], s_score))
                 text = tokenizer.convert_ids_to_tokens(title[:l])
                 target_word = text[midx]
                 predicted_word = tokenizer.decode(s_score, skip_special_tokens=True)
