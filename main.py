@@ -78,10 +78,11 @@ def train(args, model, train_dataloader, dev_dataloader):
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
 
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
-
+        hits = []
         with torch.no_grad():
             for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores, _ = model(user_features, log_mask, news_features, label, compute_loss=False)
+                scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
+                score_lm, masked_index = mlm
 
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
@@ -99,13 +100,24 @@ def train(args, model, train_dataloader, dev_dataloader):
                 ndcg5s.append(ndcg5)
                 ndcg10s.append(ndcg10)
 
+                sub_scores_lm = score_lm.topk(10)[1]
+                sub_scores_lm = sub_scores_lm.cpu().numpy()
+                title_text = news_features[0].squeeze(0).cpu().numpy()
+                masked_index = masked_index.cpu().numpy()
+
+                for (title, midx, s_score) in zip(title_text, masked_index, sub_scores_lm):
+                    hits.append(np.isin(title[midx], s_score))
+
         auc = np.mean(aucs)
         mrr = np.mean(mrrs)
         ndcg5 = np.mean(ndcg5s)
         ndcg10 = np.mean(ndcg10s)
+        hit = np.mean(hits)
 
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
-        print('AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}'.format(auc, mrr, ndcg5, ndcg10))
+        print(
+            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM)'.format(auc, mrr, ndcg5, ndcg10,
+                                                                                               hit))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
