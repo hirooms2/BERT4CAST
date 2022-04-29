@@ -156,12 +156,12 @@ def test(args, model, test_dataloader, tokenizer):
 
     if not os.path.exists('./results'):
         os.mkdir('./results')
-    result_file = './results/prediction.txt'
+    result_file = './results/prediction-%.1f.txt' % args.reg_term
     results = [[] for _ in range(len(test_dataloader))]
 
-    result_lm_file = './results/lm.txt'
+    result_lm_file = './results/lm-%.1f.txt' % args.reg_term
     results_lm = []
-
+    hit = []
     with torch.no_grad():
         for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
             scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
@@ -190,12 +190,14 @@ def test(args, model, test_dataloader, tokenizer):
             sub_scores = sub_scores.cpu().numpy()
 
             for (title, midx, s_score, l) in zip(title_text, masked_index, sub_scores, title_lens):
+                hit.append(np.isin(title[midx], s_score))
                 text = tokenizer.convert_ids_to_tokens(title[:l])
                 target_word = text[midx]
                 predicted_word = tokenizer.decode(s_score, skip_special_tokens=True)
                 result_str = "%s\t[%s]\t%s\n" % (' '.join(text), target_word, predicted_word)
                 results_lm.append(result_str)
 
+    print('LM_HIT@10:\t%f' % np.mean(hit))
     with open(result_file, 'w', encoding='utf-8') as result_f:
         for i, result in enumerate(results):
             result_f.write(('' if i == 0 else '\n') + str(i + 1) + ' ' + str(result).replace(' ', ''))

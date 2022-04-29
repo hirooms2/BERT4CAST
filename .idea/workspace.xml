@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="">
+    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="main/test/HR@10">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/newsEncoders.py" beforeDir="false" afterPath="$PROJECT_DIR$/newsEncoders.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/userEncoders.py" beforeDir="false" afterPath="$PROJECT_DIR$/userEncoders.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parameters.py" beforeDir="false" afterPath="$PROJECT_DIR$/parameters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/results/train.txt" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,12 +20,21 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fuck" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$USER_HOME$/Anaconda3/envs/NNR-main/Lib/site-packages/torch/nn/modules/module.py" root0="SKIP_INSPECTION" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="24xVRwgkADi1OA9ZJRv4v38MAn2" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -33,8 +43,8 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../CAST" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../KDSR2" />
+    <property name="settings.editor.selected.configurable" value="ide.date.format" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -163,7 +173,147 @@
       <option name="project" value="LOCAL" />
       <updated>1649311110652</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="fix">
+      <created>1651073495513</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1651073495513</updated>
+    </task>
+    <task id="LOCAL-00006" summary="file name - device id">
+      <created>1651107148918</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1651107148918</updated>
+    </task>
+    <task id="LOCAL-00007" summary="file name - device id">
+      <created>1651107538412</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1651107538412</updated>
+    </task>
+    <task id="LOCAL-00008" summary="intermediate transformer layer">
+      <created>1651114335897</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1651114335897</updated>
+    </task>
+    <task id="LOCAL-00009" summary="intermediate transformer layer (only title)">
+      <created>1651115502877</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1651115502877</updated>
+    </task>
+    <task id="LOCAL-00010" summary="intermediate transformer layer (only title)">
+      <created>1651115534307</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1651115534307</updated>
+    </task>
+    <task id="LOCAL-00011" summary="intermediate CNN layer">
+      <created>1651120381667</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1651120381667</updated>
+    </task>
+    <task id="LOCAL-00012" summary="non-cnn">
+      <created>1651124112343</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1651124112343</updated>
+    </task>
+    <task id="LOCAL-00013" summary="non-cnn">
+      <created>1651124142718</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1651124142718</updated>
+    </task>
+    <task id="LOCAL-00014" summary="rm dup conv">
+      <created>1651124337123</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1651124337123</updated>
+    </task>
+    <task id="LOCAL-00015" summary="igonre">
+      <created>1651124404227</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1651124404227</updated>
+    </task>
+    <task id="LOCAL-00016" summary="igonre2">
+      <created>1651124447676</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1651124447676</updated>
+    </task>
+    <task id="LOCAL-00017" summary="main str reg_term">
+      <created>1651125894426</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1651125894426</updated>
+    </task>
+    <task id="LOCAL-00018" summary="add cnn layer">
+      <created>1651126115017</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1651126115017</updated>
+    </task>
+    <task id="LOCAL-00019" summary="temp">
+      <created>1651133108673</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1651133108673</updated>
+    </task>
+    <task id="LOCAL-00020" summary="TH">
+      <created>1651133177835</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1651133177835</updated>
+    </task>
+    <task id="LOCAL-00021" summary="main test">
+      <created>1651151183610</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1651151183610</updated>
+    </task>
+    <task id="LOCAL-00022" summary="conv X">
+      <created>1651152308678</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1651152308678</updated>
+    </task>
+    <task id="LOCAL-00023" summary="main/test/file_name/reg_term">
+      <created>1651204802748</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1651204802748</updated>
+    </task>
+    <task id="LOCAL-00024" summary="main/test/HR@10">
+      <created>1651207408002</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1651207408002</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -194,25 +344,32 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="BERT" />
     <MESSAGE value="main rollback" />
-    <option name="LAST_COMMIT_MESSAGE" value="main rollback" />
+    <MESSAGE value="fix" />
+    <MESSAGE value="file name - device id" />
+    <MESSAGE value="intermediate transformer layer" />
+    <MESSAGE value="intermediate transformer layer (only title)" />
+    <MESSAGE value="intermediate CNN layer" />
+    <MESSAGE value="non-cnn" />
+    <MESSAGE value="rm dup conv" />
+    <MESSAGE value="igonre" />
+    <MESSAGE value="igonre2" />
+    <MESSAGE value="main str reg_term" />
+    <MESSAGE value="add cnn layer" />
+    <MESSAGE value="temp" />
+    <MESSAGE value="TH" />
+    <MESSAGE value="main test" />
+    <MESSAGE value="conv X" />
+    <MESSAGE value="main/test/file_name/reg_term" />
+    <MESSAGE value="main/test/HR@10" />
+    <option name="LAST_COMMIT_MESSAGE" value="main/test/HR@10" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/userEncoders.py</url>
-          <line>37</line>
-          <option name="timeStamp" value="143" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/layers.py</url>
-          <line>151</line>
-          <option name="timeStamp" value="157" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>118</line>
-          <option name="timeStamp" value="159" />
+          <url>file://$PROJECT_DIR$/newsEncoders.py</url>
+          <line>135</line>
+          <option name="timeStamp" value="204" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -225,6 +382,6 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1649307818929" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1651206535401" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
