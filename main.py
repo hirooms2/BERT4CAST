@@ -156,10 +156,10 @@ def test(args, model, test_dataloader, tokenizer):
 
     if not os.path.exists('./results'):
         os.mkdir('./results')
-    result_file = './results/prediction.txt'
+    result_file = './results/prediction-%.1f.txt' % args.reg_term
     results = [[] for _ in range(len(test_dataloader))]
 
-    result_lm_file = './results/lm.txt'
+    result_lm_file = './results/lm-%.1f.txt' % args.reg_term
     results_lm = []
 
     with torch.no_grad():
