@@ -74,6 +74,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         total_loss /= len(train_dataloader)
         print(ep + 1, total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
+
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
 
@@ -106,7 +107,8 @@ def train(args, model, train_dataloader, dev_dataloader):
                 masked_index = masked_index.cpu().numpy()
 
                 for (title, midx, s_score) in zip(title_text, masked_index, sub_scores_lm):
-                    hits.append(np.isin(title[midx], s_score))
+                    target = title[midx]
+                    hits.append(np.isin(target, s_score))
 
         auc = np.mean(aucs)
         mrr = np.mean(mrrs)
@@ -116,8 +118,9 @@ def train(args, model, train_dataloader, dev_dataloader):
 
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
         print(
-            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM)'.format(auc, mrr, ndcg5, ndcg10,
-                                                                                               hit))
+            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM) = {:.4f}'.format(auc, mrr, ndcg5,
+                                                                                                        ndcg10,
+                                                                                                        hit))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
@@ -132,8 +135,9 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
-            result_f.write('LM_Loss = {:.4f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(
-                total_loss_lm, auc, mrr, ndcg5, ndcg10))
+            result_f.write(
+                'LM_Hit:\t{.4f}\tLM_Loss:\t{.4f}\tAUC:\t{.4f}\tMRR:\t{.4f}\tnDCG@5\t{.4f}\tnDCG@10{.4f}\t'.format(
+                    hit, total_loss_lm, auc, mrr, ndcg5, ndcg10))
 
             result_f.write(get_time_kst())
             result_f.write('\n')
