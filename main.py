@@ -62,18 +62,18 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     for ep in range(args.epoch):
         total_loss, total_loss_lm = 0.0, 0.0
-        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
-            loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
-            total_loss += loss.data.float()
-            total_loss_lm += loss_lm.data.float()
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        total_loss /= len(train_dataloader)
-        print(ep + 1, total_loss)
-        print('Loss_LM:\t%.4f' % total_loss_lm)
+        # for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
+        #     loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
+        #     total_loss += loss.data.float()
+        #     total_loss_lm += loss_lm.data.float()
+        #
+        #     optimizer.zero_grad()
+        #     loss.backward()
+        #     optimizer.step()
+        #
+        # total_loss /= len(train_dataloader)
+        # print(ep + 1, total_loss)
+        # print('Loss_LM:\t%.4f' % total_loss_lm)
 
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
@@ -119,8 +119,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
         print(
             'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM) = {:.4f}'.format(auc, mrr, ndcg5,
-                                                                                                        ndcg10,
-                                                                                                        hit))
+                                                                                                        ndcg10, hit))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
@@ -136,7 +135,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
             result_f.write(
-                'LM_Hit:\t{.4f}\tLM_Loss:\t{.4f}\tAUC:\t{.4f}\tMRR:\t{.4f}\tnDCG@5\t{.4f}\tnDCG@10{.4f}\t'.format(
+                'LM_Hit:\t{:.4f}\tLM_Loss:\t{:.4f}\tAUC:\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10{:.4f}\t'.format(
                     hit, total_loss_lm, auc, mrr, ndcg5, ndcg10))
 
             result_f.write(get_time_kst())
