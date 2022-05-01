@@ -91,7 +91,8 @@ def read_news(data_path, args, tokenizer):
                 title = tokenizer(title, max_length=args.max_title_len, padding='max_length', truncation=True,
                                   add_special_tokens=False)
 
-                body = remove_stopwords(body.lower()[:2000])
+                # body = remove_stopwords(body.lower()[:2000])
+                body = body.lower()
                 body = tokenizer(body, max_length=args.max_body_len, padding='max_length', truncation=True,
                                  add_special_tokens=False)
 

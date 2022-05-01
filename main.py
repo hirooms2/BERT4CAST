@@ -135,8 +135,9 @@ def train(args, model, train_dataloader, dev_dataloader):
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
             result_f.write(
-                'LM_Hit:\t{:.4f}\tLM_Loss:\t{:.4f}\tAUC:\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10{:.4f}\t'.format(
-                    hit, total_loss_lm, auc, mrr, ndcg5, ndcg10))
+                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\n'.format(auc, mrr,
+                                                                                                        ndcg5, ndcg10,
+                                                                                                        hit))
 
             result_f.write(get_time_kst())
             result_f.write('\n')
