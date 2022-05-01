@@ -62,18 +62,18 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     for ep in range(args.epoch):
         total_loss, total_loss_lm = 0.0, 0.0
-        # for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
-        #     loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
-        #     total_loss += loss.data.float()
-        #     total_loss_lm += loss_lm.data.float()
-        #
-        #     optimizer.zero_grad()
-        #     loss.backward()
-        #     optimizer.step()
-        #
-        # total_loss /= len(train_dataloader)
-        # print(ep + 1, total_loss)
-        # print('Loss_LM:\t%.4f' % total_loss_lm)
+        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
+            loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
+            total_loss += loss.data.float()
+            total_loss_lm += loss_lm.data.float()
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        total_loss /= len(train_dataloader)
+        print(ep + 1, total_loss)
+        print('Loss_LM:\t%.4f' % total_loss_lm)
 
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
