@@ -119,7 +119,7 @@ class NewsEncoder(nn.Module):
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
-        # title_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
+        title_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
         return title_rep
 
     def forward_lm(self, news_features):
