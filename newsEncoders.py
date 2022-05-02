@@ -14,9 +14,10 @@ class NewsEncoder(nn.Module):
         self.max_body_len = args.max_body_len
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
-        self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim)
+        self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim,
+                                               padding_idx=0)
         self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
-                                                  embedding_dim=args.subcategory_dim)
+                                                  embedding_dim=args.subcategory_dim, padding_idx=0)
 
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
         torch.nn.init.normal_(self.masked_token_emb)
@@ -115,7 +116,7 @@ class NewsEncoder(nn.Module):
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
-        title_rep = self.feature_fusion(title_rep, category, sub_category)  # [batch_size, news_num, hidden_size+a]
+        title_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
         return title_rep
 
     def forward_lm(self, news_features):
