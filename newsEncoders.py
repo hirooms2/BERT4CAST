@@ -6,7 +6,7 @@ from layers import MultiHeadAttention, AdditiveAttention, Context_Aware_Att, Con
 
 # TH
 class NewsEncoder(nn.Module):
-    def __init__(self, args, bert_model, word_embedding_path):
+    def __init__(self, args, tokenizer, word_embedding_path):
         super(NewsEncoder, self).__init__()
         self.args = args
         self.device = args.device_id
@@ -26,7 +26,8 @@ class NewsEncoder(nn.Module):
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size, bias=False)
 
-        self.bert_model = bert_model
+        # self.bert_model = bert_model
+        self.tokenizer = tokenizer
         self.word_embedding_path = word_embedding_path
         self.multihead_attention_t = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
         self.multihead_attention_b = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
@@ -140,16 +141,9 @@ class NewsEncoder(nn.Module):
 
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
-        masked_title_text = title_text.clone().detach()
 
         # only for stopwords???
-        lens = torch.sum(title_mask, dim=1, keepdim=True)
-        sampling_prob = title_mask / (lens + 1e-10)
-        masked_index = sampling_prob.multinomial(num_samples=1, replacement=True)
-        masked_index = masked_index.squeeze(1)
-        masked_voca_id = title_text[torch.arange(batch_size * news_num), masked_index]
-        masked_title_text[torch.arange(batch_size * news_num), masked_index] = 103
-
+        masked_title_text, masked_index, masked_voca_id = self.mask_tokens(title_text, title_mask)
         title_emb = self.dropout(self.word_embedding(masked_title_text))
         body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
@@ -197,28 +191,13 @@ class NewsEncoder(nn.Module):
             dim=2)  # [batch_size, news_num, news_embedding_dim]
         return news_representation
 
-    def mask_tokens(self, inputs: torch.Tensor, mlm_probability=0.15, pad=True):
-        labels = inputs.clone()
+    def mask_tokens(self, title_text: torch.Tensor, title_mask: torch.Tensor, mlm_probability=0.15):
+        masked_title_text = title_text.clone()  # [B, N]
+        lens = torch.sum(title_mask, dim=1, keepdim=True)  # [B, 1]
+        sampling_prob = title_mask / (lens + 1e-10)  # [B, N]
+        masked_index = sampling_prob.multinomial(num_samples=1, replacement=True).squeeze(1)  # [B, N]
 
-        # mlm_probability은 15%로 BERT에섯 사용하는 확률
-        probability_matrix = torch.full(labels.shape, mlm_probability)
-        special_tokens_mask = [
-            self.tokenizer.get_special_tokens_mask(val, already_has_special_tokens=True) for val in labels.tolist()
-        ]
-        probability_matrix.masked_fill_(torch.tensor(special_tokens_mask, dtype=torch.bool), value=0.0)
-        if self.tokenizer._pad_token is not None:
-            padding_mask = labels.eq(self.tokenizer.pad_token_id)
-            probability_matrix.masked_fill_(padding_mask, value=0.0)
-        masked_indices = torch.bernoulli(probability_matrix).bool()
-        labels[~masked_indices] = -100  # We only compute loss on masked tokens
+        masked_voca_id = title_text[torch.arange(title_mask.shape[0]), masked_index]  # [B]
+        masked_title_text[torch.arange(title_mask.shape[0]), masked_index] = self.tokenizer.mask_token_id
 
-        # 80% of the time, we replace masked input tokens with tokenizer.mask_token ([MASK])
-        indices_replaced = torch.bernoulli(torch.full(labels.shape, 0.8)).bool() & masked_indices
-        inputs[indices_replaced] = self.tokenizer.convert_tokens_to_ids(self.tokenizer.mask_token)
-
-        # 10% of the time, we replace masked input tokens with random word
-        indices_random = torch.bernoulli(torch.full(labels.shape, 0.5)).bool() & masked_indices & ~indices_replaced
-        random_words = torch.randint(len(self.tokenizer), labels.shape, dtype=torch.long)
-        inputs[indices_random] = random_words[indices_random]
-
-        return inputs, labels
+        return masked_title_text, masked_index, masked_voca_id

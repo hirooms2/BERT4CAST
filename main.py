@@ -62,11 +62,6 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     for ep in range(args.epoch):
         total_loss, total_loss_lm = 0.0, 0.0
-        if ep > 2:
-            args.reg_term = 0
-        else:
-            args.reg_term = 1
-
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
             loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
@@ -240,13 +235,13 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
     word_dict = tokenizer.get_vocab()
     bert_config = AutoConfig.from_pretrained("bert-base-uncased", output_hidden_states=True)
-    bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
-
-    if args.n_layer > 2:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
-        for module in modules:
-            for param in module.parameters():
-                param.requires_grad = False
+    # bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
+    #
+    # if args.n_layer > 2:
+    #     modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
+    #     for module in modules:
+    #         for param in module.parameters():
+    #             param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
@@ -272,7 +267,7 @@ if __name__ == '__main__':
 
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 
-    model = Model(args, bert_model, word_embedding_path)
+    model = Model(args, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     train_dataset = DatasetTrain(
