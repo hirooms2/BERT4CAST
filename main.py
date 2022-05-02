@@ -62,6 +62,11 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     for ep in range(args.epoch):
         total_loss, total_loss_lm = 0.0, 0.0
+        if ep > 2:
+            args.reg_term = 0
+        else:
+            args.reg_term = 1
+
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
             loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
