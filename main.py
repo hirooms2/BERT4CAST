@@ -1,23 +1,20 @@
-import os
-from torch import nn, optim
-from torch.utils.data import DataLoader
-
-import torch
-
-from data_loader import DatasetTrain, DatasetTest
-from model import Model
-from parameters import parse_args
-from preprocess import read_news, get_doc_input, save_news, load_news, glove
-from transformers import AutoTokenizer, AutoModel, AutoConfig
-import numpy as np
 import logging
-from tqdm.auto import tqdm
-
-from utils import scoring
-
-from pytz import timezone
+import os
 from datetime import datetime
 
+import numpy as np
+import torch
+from pytz import timezone
+from torch import nn, optim
+from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
+from transformers import AutoConfig, AutoModel, AutoTokenizer
+
+from data_loader import DatasetTest, DatasetTrain
+from model import Model
+from parameters import parse_args
+from preprocess import get_doc_input, glove, load_news, read_news, save_news
+from utils import scoring
 
 ##TODO : GIT Contributor test
 
@@ -41,8 +38,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    # results_file_path = f'./results/train_device_{args.device_id}_{args.name}.txt'
-    results_file_path = './results/train_device_%d.txt' % args.device_id
+    results_file_path = f'./results/train_device_{args.device_id}_{args.name}.txt'
+    # results_file_path = './results/train_device_%d.txt' % args.device_id
 
     # Only For Best Result
     best_results_file_path = './results/train_best.txt'  # only Best result 파일
