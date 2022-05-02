@@ -18,6 +18,8 @@ class NewsEncoder(nn.Module):
                                                padding_idx=0)
         self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
                                                   embedding_dim=args.subcategory_dim, padding_idx=0)
+        nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
+        nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
         torch.nn.init.normal_(self.masked_token_emb)
