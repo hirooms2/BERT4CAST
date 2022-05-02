@@ -41,7 +41,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    # results_file_path = './results/train.txt'
+    # results_file_path = f'./results/train_device_{args.device_id}_{args.name}.txt'
     results_file_path = './results/train_device_%d.txt' % args.device_id
 
     # Only For Best Result
