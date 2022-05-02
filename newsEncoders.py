@@ -14,6 +14,9 @@ class NewsEncoder(nn.Module):
         self.max_body_len = args.max_body_len
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
+        self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim)
+        self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
+                                                  embedding_dim=args.subcategory_dim)
 
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
         torch.nn.init.normal_(self.masked_token_emb)
@@ -112,7 +115,7 @@ class NewsEncoder(nn.Module):
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
         # title_rep = self.reduce_dim_linear(title_rep)
-        # title_rep = self.feature_fusion(title_rep, category, sub_category)  # [batch_size, news_num, hidden_size+a]
+        title_rep = self.feature_fusion(title_rep, category, sub_category)  # [batch_size, news_num, hidden_size+a]
         return title_rep
 
     def forward_lm(self, news_features):
@@ -133,7 +136,7 @@ class NewsEncoder(nn.Module):
         all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
 
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
-        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]g
+        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
         masked_title_text = title_text.clone().detach()
 
         # only for stopwords???

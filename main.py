@@ -135,7 +135,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
             result_f.write(
-                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\n'.format(auc, mrr,
+                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\t'.format(auc, mrr,
                                                                                                         ndcg5, ndcg10,
                                                                                                         hit))
 
@@ -260,6 +260,10 @@ if __name__ == '__main__':
         save_news(news_file, text_path, news, news_index, category_dict, subcategory_dict)
     else:
         news, news_index, category_dict, subcategory_dict = load_news(news_file, text_path)
+
+    args.category_num = len(category_dict) + 1
+    args.subcategory_num = len(subcategory_dict) + 1
+    args.vocab_size = len(word_dict)
 
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 

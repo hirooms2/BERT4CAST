@@ -127,8 +127,8 @@ def get_doc_input(news, news_index, category_dict, subcategory_dict, args):
     news_body = np.zeros((news_num, args.max_body_len), dtype='int32')
     news_body_type = np.zeros((news_num, args.max_body_len), dtype='int32')
     news_body_attmask = np.zeros((news_num, args.max_body_len), dtype='int32')
-    news_category = np.zeros((news_num, 1), dtype='int32')
-    news_subcategory = np.zeros((news_num, 1), dtype='int32')
+    news_category = np.zeros(news_num, dtype='int32')
+    news_subcategory = np.zeros(news_num, dtype='int32')
 
     for key in tqdm(news):
         title, body, category, subcategory = news[key]
@@ -140,8 +140,8 @@ def get_doc_input(news, news_index, category_dict, subcategory_dict, args):
         news_body[doc_index] = body['input_ids']
         news_body_type[doc_index] = body['token_type_ids']
         news_body_attmask[doc_index] = body['attention_mask']
-        news_category[doc_index, 0] = category_dict[category] if category in category_dict else 0
-        news_subcategory[doc_index, 0] = subcategory_dict[subcategory] if subcategory in subcategory_dict else 0
+        news_category[doc_index] = category_dict[category] if category in category_dict else 0
+        news_subcategory[doc_index] = subcategory_dict[subcategory] if subcategory in subcategory_dict else 0
 
     return {'title_text': news_title, 'title_mask': news_title_attmask, 'body_text': news_body,
             'body_mask': news_body_attmask, 'category': news_category, 'sub_category': news_subcategory}

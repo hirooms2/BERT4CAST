@@ -39,8 +39,7 @@ def parse_args():
 
     parser.add_argument('--position_dim', type=int, default=300, help='Positional dimension of user encoder')
     parser.add_argument('--head_num', type=int, default=20, help='Head number of multi-head self-attention')
-    parser.add_argument('--category_embedding_dim', type=int, default=50, help='Category embedding dimension')
-    parser.add_argument('--subcategory_embedding_dim', type=int, default=50, help='SubCategory embedding dimension')
+
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
     parser.add_argument('--attention_dim', type=int, default=200, help="Attention dimension")
     parser.add_argument('--word_embedding_dim', type=int, default=300, help='Word embedding dimension')
@@ -50,6 +49,12 @@ def parse_args():
                         help='CNN group')
     parser.add_argument('--cnn_kernel_num', type=int, default=400, help='Number of CNN kernel')
     parser.add_argument('--cnn_window_size', type=int, default=3, help='Window size of CNN kernel')
+
+    parser.add_argument('--use_category', action='store_false')
+    parser.add_argument('--category_dim', type=int, default=50, help='Category embedding dimension')
+    parser.add_argument('--subcategory_dim', type=int, default=50, help='SubCategory embedding dimension')
+    parser.add_argument('--category_num', type=int, default=50, help='Category embedding num')
+    parser.add_argument('--subcategory_num', type=int, default=50, help='SubCategory embedding num')
 
     args = parser.parse_args()
 
