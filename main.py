@@ -71,8 +71,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             loss.backward()
             optimizer.step()
 
-        total_loss /= len(train_dataloader)
-        print(ep + 1, total_loss)
+        print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
 
         # best_auc, best_epoch = 0, 0
