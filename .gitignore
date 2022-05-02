@@ -10,7 +10,7 @@ thtester.py
 __pycache__/
 *.py[cod]
 *$py.class
-
+autotest.sh
 # C extensions
 *.so
 
