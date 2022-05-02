@@ -71,17 +71,18 @@ def train(args, model, train_dataloader, dev_dataloader):
             loss.backward()
             optimizer.step()
 
-        total_loss /= len(train_dataloader)
-        print(ep + 1, total_loss)
+        print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
+
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
 
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
-
+        hits = []
         with torch.no_grad():
             for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores, _ = model(user_features, log_mask, news_features, label, compute_loss=False)
+                scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
+                score_lm, masked_index = mlm
 
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
@@ -99,13 +100,25 @@ def train(args, model, train_dataloader, dev_dataloader):
                 ndcg5s.append(ndcg5)
                 ndcg10s.append(ndcg10)
 
+                sub_scores_lm = score_lm.topk(10)[1]
+                sub_scores_lm = sub_scores_lm.cpu().numpy()
+                title_text = news_features[0].squeeze(0).cpu().numpy()
+                masked_index = masked_index.cpu().numpy()
+
+                for (title, midx, s_score) in zip(title_text, masked_index, sub_scores_lm):
+                    target = title[midx]
+                    hits.append(np.isin(target, s_score))
+
         auc = np.mean(aucs)
         mrr = np.mean(mrrs)
         ndcg5 = np.mean(ndcg5s)
         ndcg10 = np.mean(ndcg10s)
+        hit = np.mean(hits)
 
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
-        print('AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}'.format(auc, mrr, ndcg5, ndcg10))
+        print(
+            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM) = {:.4f}'.format(auc, mrr, ndcg5,
+                                                                                                        ndcg10, hit))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
@@ -120,8 +133,10 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
-            result_f.write('LM_Loss = {:.4f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\t'.format(
-                total_loss_lm, auc, mrr, ndcg5, ndcg10))
+            result_f.write(
+                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\t'.format(auc, mrr,
+                                                                                                        ndcg5, ndcg10,
+                                                                                                        hit))
 
             result_f.write(get_time_kst())
             result_f.write('\n')
@@ -219,13 +234,13 @@ if __name__ == '__main__':
     tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
     word_dict = tokenizer.get_vocab()
     bert_config = AutoConfig.from_pretrained("bert-base-uncased", output_hidden_states=True)
-    bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
-
-    if args.n_layer > 2:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
-        for module in modules:
-            for param in module.parameters():
-                param.requires_grad = False
+    # bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
+    #
+    # if args.n_layer > 2:
+    #     modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
+    #     for module in modules:
+    #         for param in module.parameters():
+    #             param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
@@ -245,9 +260,13 @@ if __name__ == '__main__':
     else:
         news, news_index, category_dict, subcategory_dict = load_news(news_file, text_path)
 
+    args.category_num = len(category_dict) + 1
+    args.subcategory_num = len(subcategory_dict) + 1
+    args.vocab_size = len(word_dict)
+
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 
-    model = Model(args, bert_model, word_embedding_path)
+    model = Model(args, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     train_dataset = DatasetTrain(
