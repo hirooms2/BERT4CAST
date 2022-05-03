@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="main LM accuracy (출력 수정)">
+    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="category O">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/newsEncoders.py" beforeDir="false" afterPath="$PROJECT_DIR$/newsEncoders.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +42,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../CAST" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../KDSR2" />
     <property name="settings.editor.selected.configurable" value="ide.date.format" />
   </component>
   <component name="RecentsManager">
@@ -143,7 +144,9 @@
       <workItem from="1646883024050" duration="93915000" />
       <workItem from="1649206174833" duration="16878000" />
       <workItem from="1651314773391" duration="361000" />
-      <workItem from="1651315268645" duration="3618000" />
+      <workItem from="1651315268645" duration="25666000" />
+      <workItem from="1651500121005" duration="4160000" />
+      <workItem from="1651540491558" duration="453000" />
     </task>
     <task id="LOCAL-00001" summary="BERT">
       <created>1649212333380</created>
@@ -348,7 +351,98 @@
       <option name="project" value="LOCAL" />
       <updated>1651320934940</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="main LM accuracy (에러 수정)">
+      <created>1651334343928</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1651334343928</updated>
+    </task>
+    <task id="LOCAL-00031" summary="max_body_len 300">
+      <created>1651365495866</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1651365495866</updated>
+    </task>
+    <task id="LOCAL-00032" summary="max_body_len 300">
+      <created>1651365807705</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1651365807705</updated>
+    </task>
+    <task id="LOCAL-00033" summary="max_body_len 300">
+      <created>1651421170316</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1651421170316</updated>
+    </task>
+    <task id="LOCAL-00034" summary="fuse cate emb">
+      <created>1651457270387</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1651457270387</updated>
+    </task>
+    <task id="LOCAL-00035" summary="fuck">
+      <created>1651458597750</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1651458597750</updated>
+    </task>
+    <task id="LOCAL-00036" summary="LM first, then CTR">
+      <created>1651466494055</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1651466494056</updated>
+    </task>
+    <task id="LOCAL-00037" summary="rollback">
+      <created>1651480892314</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1651480892314</updated>
+    </task>
+    <task id="LOCAL-00038" summary="category embedding padding_idx 0">
+      <created>1651490299351</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1651490299351</updated>
+    </task>
+    <task id="LOCAL-00039" summary="category emb initialize">
+      <created>1651490828309</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1651490828309</updated>
+    </task>
+    <task id="LOCAL-00040" summary="category emb initialize">
+      <created>1651493640708</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1651493640708</updated>
+    </task>
+    <task id="LOCAL-00041" summary="category X / Loss 출력">
+      <created>1651495587231</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1651495587231</updated>
+    </task>
+    <task id="LOCAL-00042" summary="category O">
+      <created>1651496033195</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1651496033195</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -377,15 +471,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="BERT" />
-    <MESSAGE value="main rollback" />
-    <MESSAGE value="fix" />
-    <MESSAGE value="file name - device id" />
-    <MESSAGE value="intermediate transformer layer" />
-    <MESSAGE value="intermediate transformer layer (only title)" />
-    <MESSAGE value="intermediate CNN layer" />
-    <MESSAGE value="non-cnn" />
-    <MESSAGE value="rm dup conv" />
     <MESSAGE value="igonre" />
     <MESSAGE value="igonre2" />
     <MESSAGE value="main str reg_term" />
@@ -401,15 +486,30 @@
     <MESSAGE value="embedding_size fix" />
     <MESSAGE value="remove stopwords in body" />
     <MESSAGE value="main LM accuracy (출력 수정)" />
-    <option name="LAST_COMMIT_MESSAGE" value="main LM accuracy (출력 수정)" />
+    <MESSAGE value="main LM accuracy (에러 수정)" />
+    <MESSAGE value="max_body_len 300" />
+    <MESSAGE value="fuse cate emb" />
+    <MESSAGE value="fuck" />
+    <MESSAGE value="LM first, then CTR" />
+    <MESSAGE value="rollback" />
+    <MESSAGE value="category embedding padding_idx 0" />
+    <MESSAGE value="category emb initialize" />
+    <MESSAGE value="category X / Loss 출력" />
+    <MESSAGE value="category O" />
+    <option name="LAST_COMMIT_MESSAGE" value="category O" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/main.py</url>
-          <line>116</line>
-          <option name="timeStamp" value="230" />
+          <url>file://$PROJECT_DIR$/userEncoders.py</url>
+          <line>41</line>
+          <option name="timeStamp" value="236" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/newsEncoders.py</url>
+          <line>64</line>
+          <option name="timeStamp" value="239" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -422,6 +522,6 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1651332511148" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1651500124298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

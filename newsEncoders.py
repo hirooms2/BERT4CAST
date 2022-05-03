@@ -19,7 +19,7 @@ class NewsEncoder(nn.Module):
         self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
                                                   embedding_dim=args.subcategory_dim, padding_idx=0)
         nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
-        nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
+        # nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
         self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
         torch.nn.init.normal_(self.masked_token_emb)
@@ -184,8 +184,8 @@ class NewsEncoder(nn.Module):
     # news_representation : [batch_size, news_num, news_embedding_dim]
     def feature_fusion(self, news_representation, category, subCategory):
         category_representation = self.category_embedding(category)  # [batch_size, news_num, category_embedding_dim]
-        subCategory_representation = self.subCategory_embedding(
-            subCategory)  # [batch_size, news_num, subCategory_embedding_dim]
+        subCategory_representation = self.subCategory_embedding(subCategory)  # [B, N, s_emb_dim]
+
         news_representation = torch.cat(
             [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
             dim=2)  # [batch_size, news_num, news_embedding_dim]
