@@ -166,7 +166,12 @@ class NewsEncoder(nn.Module):
         # title_emb = title_output.last_hidden_state
         # body_emb = body_output.last_hidden_state
 
-        c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+        rel_score = torch.matmul(title_emb, body_emb.transpose(2, 1))  # [B * L, N, M]
+        rel_indices = torch.topk(rel_score, k=self.selection)[1]  # [B * L, N, K]
+        news_mask = torch.zeros(rel_score.size(), device=self.device)
+        news_mask = news_mask.scatter_(2, rel_indices, 1)
+
+        c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, news_mask))  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
         # c_masked = c_masked[:, 0]
 
