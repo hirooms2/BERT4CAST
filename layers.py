@@ -169,7 +169,7 @@ class Context_Aware_Att(nn.Module):
         # Point-wise Feed-forward
         new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
         new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
-        hidden = self.norm(hidden + new_hidden)
+        hidden = self.layernorm(hidden + new_hidden)
 
         return hidden
 

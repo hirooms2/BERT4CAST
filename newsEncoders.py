@@ -114,7 +114,7 @@ class NewsEncoder(nn.Module):
 
         # title_emb = self.dropout(self.word_embedding(title_text))
         # body_emb = self.dropout(self.word_embedding(body_text))
-        c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+        c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
 
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
