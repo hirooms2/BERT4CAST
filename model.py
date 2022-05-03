@@ -1,3 +1,6 @@
+import math
+import pickle
+
 import torch.nn as nn
 
 from newsEncoders import NewsEncoder
@@ -12,6 +15,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.args = args
         self.name = args.name
+        self.word_embedding_path = word_embedding_path
         self.news_encoder = NewsEncoder(args,
                                         bert_model,
                                         word_embedding_path)

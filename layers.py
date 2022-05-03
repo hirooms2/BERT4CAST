@@ -16,6 +16,11 @@ class AdditiveAttention(nn.Module):
         self.att_fc1 = nn.Linear(d_h, hidden_size)
         self.att_fc2 = nn.Linear(hidden_size, 1)
 
+    def initialize(self):
+        nn.init.xavier_uniform_(self.att_fc1.weight, gain=nn.init.calculate_gain('tanh'))
+        nn.init.zeros_(self.att_fc1.bias)
+        nn.init.xavier_uniform_(self.att_fc2.weight)
+
     def forward(self, x, attn_mask=None):
         """
         Args:
@@ -123,9 +128,9 @@ class Context_Aware_Att(nn.Module):
         self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
         self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
 
-        self.F1 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
-        self.F2 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
-        self.layernorm = nn.LayerNorm(self.hidden_size)
+        # self.F1 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
+        # self.F2 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
+        # self.layernorm = nn.LayerNorm(self.hidden_size)
 
     def initialize(self):
         nn.init.xavier_uniform_(self.W_Q.weight)
@@ -166,10 +171,10 @@ class Context_Aware_Att(nn.Module):
             Q_seq, K_seq, V_seq, mask)  # [bz, 20, seq_len, 20]
         hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
 
-        # Point-wise Feed-forward
-        new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
-        new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
-        hidden = self.layernorm(hidden + new_hidden)
+        # # Point-wise Feed-forward
+        # new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
+        # new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
+        # hidden = self.layernorm(hidden + new_hidden)
 
         return hidden
 

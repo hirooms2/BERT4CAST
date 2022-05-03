@@ -14,15 +14,14 @@ class NewsEncoder(nn.Module):
         self.max_body_len = args.max_body_len
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
+
         self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim,
                                                padding_idx=0)
         self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
                                                   embedding_dim=args.subcategory_dim, padding_idx=0)
         nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
-        # nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
+        nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
-        self.masked_token_emb = nn.Parameter(torch.zeros(self.word_embedding_dim), requires_grad=True)
-        torch.nn.init.normal_(self.masked_token_emb)
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size, bias=False)
 
@@ -114,7 +113,7 @@ class NewsEncoder(nn.Module):
 
         # title_emb = self.dropout(self.word_embedding(title_text))
         # body_emb = self.dropout(self.word_embedding(body_text))
-        c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
+        c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
 
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
