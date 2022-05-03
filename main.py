@@ -231,16 +231,19 @@ def print_num_param(model):
 if __name__ == '__main__':
     args = parse_args()
 
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    # albert-base-v2
+    # bert-base-uncased
+    # roberta-base
+    tokenizer = AutoTokenizer.from_pretrained("roberta-base")
     word_dict = tokenizer.get_vocab()
-    bert_config = AutoConfig.from_pretrained("bert-base-uncased", output_hidden_states=True)
-    # bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
-    #
-    # if args.n_layer > 2:
-    #     modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
-    #     for module in modules:
-    #         for param in module.parameters():
-    #             param.requires_grad = False
+    bert_config = AutoConfig.from_pretrained("roberta-base", output_hidden_states=True)
+    bert_model = AutoModel.from_pretrained("roberta-base", config=bert_config)
+
+    if args.n_layer > 2:
+        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
+        for module in modules:
+            for param in module.parameters():
+                param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
@@ -266,7 +269,7 @@ if __name__ == '__main__':
 
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 
-    model = Model(args, tokenizer, word_embedding_path)
+    model = Model(args, bert_model, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     train_dataset = DatasetTrain(

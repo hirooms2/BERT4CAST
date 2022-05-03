@@ -11,6 +11,7 @@ class Model(nn.Module):
     def __init__(self,
                  args,
                  bert_model,
+                 tokenizer,
                  word_embedding_path):
         super(Model, self).__init__()
         self.args = args
@@ -18,6 +19,7 @@ class Model(nn.Module):
         self.word_embedding_path = word_embedding_path
         self.news_encoder = NewsEncoder(args,
                                         bert_model,
+                                        tokenizer,
                                         word_embedding_path)
         self.user_encoder = UserEncoder(args)
 

@@ -13,6 +13,7 @@ class UserEncoder(torch.nn.Module):
         # self.news_dim = args.word_embedding_dim
         self.news_dim = args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim
         # self.news_dim = args.n_heads * args.n_dim
+        # self.news_dim = args.news_dim
 
         self.affine1 = nn.Linear(2 * self.news_dim, args.attention_dim)
         self.affine2 = nn.Linear(args.attention_dim, 1)
