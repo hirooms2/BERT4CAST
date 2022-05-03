@@ -17,7 +17,6 @@ from utils import scoring
 
 from pytz import timezone
 from datetime import datetime
-from accelerate import Accelerator
 
 
 ##TODO : GIT Contributor test
@@ -239,7 +238,6 @@ if __name__ == '__main__':
     word_dict = tokenizer.get_vocab()
     bert_config = AutoConfig.from_pretrained("roberta-base", output_hidden_states=True)
     bert_model = AutoModel.from_pretrained("roberta-base", config=bert_config)
-    accelerator = Accelerator()
 
     if args.n_layer > 2:
         modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer]]
