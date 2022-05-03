@@ -12,6 +12,8 @@ class NewsEncoder(nn.Module):
         self.device = args.device_id
         self.max_title_len = args.max_title_len
         self.max_body_len = args.max_body_len
+        self.selection = args.selection
+
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
 
@@ -78,8 +80,13 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        # title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
-        # body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
+        title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
+        body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
+
+        rel_score = torch.matmul(title_emb, body_emb.transpose(2, 1))  # [B * L, N, M]
+        rel_indices = torch.topk(rel_score, k=self.selection)[1]  # [B * L, N, K]
+        news_mask = torch.zeros(rel_score.size(), device=self.device)
+        news_mask = news_mask.scatter_(2, rel_indices, 1)
 
         # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
         # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
@@ -94,10 +101,11 @@ class NewsEncoder(nn.Module):
 
         # masked_word_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
 
-        title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        title_emb = title_output.last_hidden_state
-        body_emb = body_output.last_hidden_state
+        # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
+        # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
+        # title_emb = title_output.last_hidden_state
+        # body_emb = body_output.last_hidden_state
+
         # input_emb = torch.cat([title_text, body_text], dim=1)
         # input_mask = torch.cat([title_mask, body_mask], dim=1)
         # bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
@@ -111,7 +119,7 @@ class NewsEncoder(nn.Module):
 
         # title_emb = self.dropout(self.word_embedding(title_text))
         # body_emb = self.dropout(self.word_embedding(body_text))
-        c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+        c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, news_mask))  # [B * L, N, d]
 
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
@@ -142,8 +150,8 @@ class NewsEncoder(nn.Module):
 
         # only for stopwords???
         masked_title_text, masked_index, masked_voca_id = self.mask_tokens(title_text, title_mask)
-        # title_emb = self.dropout(self.word_embedding(masked_title_text))
-        # body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
+        title_emb = self.dropout(self.word_embedding(masked_title_text))
+        body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
         # masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
         # c_masked = self.dropout(self.multihead_attention(masked_emb, masked_emb, masked_emb,
@@ -153,10 +161,10 @@ class NewsEncoder(nn.Module):
         # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
         # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
 
-        title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        title_emb = title_output.last_hidden_state
-        body_emb = body_output.last_hidden_state
+        # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
+        # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
+        # title_emb = title_output.last_hidden_state
+        # body_emb = body_output.last_hidden_state
 
         c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
@@ -168,8 +176,8 @@ class NewsEncoder(nn.Module):
         # Loss_LM 만드는 부분
         a = self.linear_output(c_masked)
         # a = c_masked
-        b = self.bert_model.embeddings.word_embeddings.weight[:]
-        # b = self.word_embedding.weight[:]
+        # b = self.bert_model.embeddings.word_embeddings.weight[:]
+        b = self.word_embedding.weight[:]
 
         score_lm = torch.matmul(a, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
 
