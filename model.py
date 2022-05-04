@@ -1,6 +1,7 @@
 import math
 import pickle
 
+import torch
 import torch.nn as nn
 
 from newsEncoders import NewsEncoder
@@ -42,7 +43,10 @@ class Model(nn.Module):
 
         user_vector = self.user_encoder(log_vec, log_mask, news_vec)
 
-        score = (news_vec * user_vector).sum(dim=2)  # dot-product
+        a = news_vec / (torch.norm(news_vec, dim=2, keepdim=True) + 1e-10)
+        b = user_vector / (torch.norm(user_vector, dim=2, keepdim=True) + 1e-10)
+
+        score = 10 * (a * b).sum(dim=2)  # dot-product
 
         if compute_loss:
             loss_ctr = self.criterion(score, label)
