@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="category O">
+    <list default="true" id="9b683256-cdb5-4094-bfa7-e2843476a786" name="Changes" comment="parameter">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/layers.py" beforeDir="false" afterPath="$PROJECT_DIR$/layers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/newsEncoders.py" beforeDir="false" afterPath="$PROJECT_DIR$/newsEncoders.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,7 +19,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="fuck" />
+        <entry key="$PROJECT_DIR$" value="2stage" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -42,7 +40,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../KDSR2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../PLM4NewsRec-main" />
     <property name="settings.editor.selected.configurable" value="ide.date.format" />
   </component>
   <component name="RecentsManager">
@@ -54,7 +52,7 @@
       <recent name="C:\Users\KIMTAEHO\PycharmProjects\BERT4CAST\datasets\MIND" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.news_summarize">
     <configuration name="body_concat" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CAST" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -99,6 +97,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="news_summarize" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="CAST" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="C:\Users\KIMTAEHO\PycharmProjects\BERT4CAST\news_summarize.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="temp" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="CAST" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -121,11 +141,35 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="textsummarizer" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="CAST" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/textsummarizer.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.news_summarize" />
         <item itemvalue="Python.main" />
-        <item itemvalue="Python.body_concat" />
         <item itemvalue="Python.temp" />
+        <item itemvalue="Python.body_concat" />
+        <item itemvalue="Python.main" />
       </list>
     </recent_temporary>
   </component>
@@ -442,7 +486,35 @@
       <option name="project" value="LOCAL" />
       <updated>1651496033195</updated>
     </task>
-    <option name="localTasksCounter" value="43" />
+    <task id="LOCAL-00043" summary="Albert fix">
+      <created>1651646542954</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1651646542954</updated>
+    </task>
+    <task id="LOCAL-00044" summary="BERT tuning">
+      <created>1651650668631</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1651650668631</updated>
+    </task>
+    <task id="LOCAL-00045" summary="parameter">
+      <created>1651651318292</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1651651318292</updated>
+    </task>
+    <task id="LOCAL-00046" summary="parameter">
+      <created>1651662914557</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1651662914557</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -471,9 +543,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="igonre" />
-    <MESSAGE value="igonre2" />
-    <MESSAGE value="main str reg_term" />
     <MESSAGE value="add cnn layer" />
     <MESSAGE value="temp" />
     <MESSAGE value="TH" />
@@ -496,20 +565,33 @@
     <MESSAGE value="category emb initialize" />
     <MESSAGE value="category X / Loss 출력" />
     <MESSAGE value="category O" />
-    <option name="LAST_COMMIT_MESSAGE" value="category O" />
+    <MESSAGE value="Albert fix" />
+    <MESSAGE value="BERT tuning" />
+    <MESSAGE value="parameter" />
+    <option name="LAST_COMMIT_MESSAGE" value="parameter" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/userEncoders.py</url>
-          <line>41</line>
+          <line>43</line>
           <option name="timeStamp" value="236" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/newsEncoders.py</url>
-          <line>64</line>
-          <option name="timeStamp" value="239" />
+          <url>file://$PROJECT_DIR$/main.py</url>
+          <line>246</line>
+          <option name="timeStamp" value="252" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/summarize.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="262" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/summarize.py</url>
+          <line>18</line>
+          <option name="timeStamp" value="263" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -522,6 +604,8 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1651500124298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BERT4CAST$summarize.coverage" NAME="summarize Coverage Results" MODIFIED="1651662509579" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BERT4CAST$main.coverage" NAME="main Coverage Results" MODIFIED="1651656094875" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BERT4CAST$textsummarizer.coverage" NAME="textsummarizer Coverage Results" MODIFIED="1651653380206" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
