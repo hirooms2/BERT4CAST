@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('--n_layer', type=int, default=12)
     parser.add_argument('--max_hist_len', type=int, default=50)
     parser.add_argument('--max_title_len', type=int, default=30)
-    parser.add_argument('--max_body_len', type=int, default=300)
+    parser.add_argument('--max_body_len', type=int, default=70)
     parser.add_argument('--selection', type=int, default=200)
 
     parser.add_argument('--max_abstract_len', type=int, default=80)
