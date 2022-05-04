@@ -20,6 +20,7 @@ class UserEncoder(torch.nn.Module):
 
         self.news_additive_attention = AdditiveAttention(
             args.news_dim, args.attention_dim)
+        self.gru = nn.GRU(self.news_dim, self.news_dim, batch_first=True)
 
     def forward(self, log_vec, log_mask, news_vec):
         """
@@ -42,6 +43,8 @@ class UserEncoder(torch.nn.Module):
 
         news_num = news_vec.size(1)
         hist_len = log_mask.size(1)
+
+        log_vec, _ = self.gru(log_vec)
 
         log_mask = log_mask.unsqueeze(dim=1).expand(-1, news_num, -1)  # [batch_size, news_num, hist_len]
         news_vec = news_vec.unsqueeze(dim=2).expand(-1, -1, hist_len, -1)  # [batch_size, news_num, hist_len, news_dim]
