@@ -7,7 +7,7 @@ def parse_args():
 
     parser.add_argument('--mode', type=str, default='train')
     parser.add_argument('--name', type=str, default='BERT-CAST')
-    parser.add_argument('--bert_name', type=str, default='albert-base-v2',
+    parser.add_argument('--bert_name', type=str, default='bert-base-uncased',
                         choices=['bert-base-uncased', 'albert-base-v2'])
     parser.add_argument('--dataset', type=str, default='MIND/small')
     parser.add_argument('--read_text', action='store_false')
@@ -34,7 +34,7 @@ def parse_args():
 
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
     parser.add_argument('--n_heads', type=int, default=12, help='Head number of multi-head self-attention')
-    parser.add_argument('--n_dim', type=int, default=32, help='dimension of each head')
+    parser.add_argument('--n_dim', type=int, default=64, help='dimension of each head')
     parser.add_argument('--news_dim', type=int, default=64, help='Head number of multi-head self-attention')
 
     parser.add_argument('--position_dim', type=int, default=300, help='Positional dimension of user encoder')
@@ -42,7 +42,7 @@ def parse_args():
 
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
     parser.add_argument('--attention_dim', type=int, default=200, help="Attention dimension")
-    parser.add_argument('--word_embedding_dim', type=int, default=128, help='Word embedding dimension')
+    parser.add_argument('--word_embedding_dim', type=int, default=768, help='Word embedding dimension')
     parser.add_argument('--glove_dim', type=int, default=300, help='Word embedding dimension')
 
     parser.add_argument('--cnn_method', type=str, default='naive', choices=['naive', 'group3', 'group4', 'group5'],

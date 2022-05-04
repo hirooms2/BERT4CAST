@@ -23,31 +23,17 @@ class NewsEncoder(nn.Module):
         nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        # self.linear_output = nn.Linear(args.n_heads * args.n_dim, args.vocab_size, bias=False)
+        self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim, args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
         self.word_embedding_path = word_embedding_path
-        # self.multihead_attention_t = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
-        # self.multihead_attention_b = MultiHeadAttention(args.word_embedding_dim, args.n_heads, args.n_dim, args.n_dim)
 
         self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
-        # self.attention = AdditiveAttention(args.word_embedding_dim, args.attention_dim)
-
-        # self.title_conv = Conv1D(args.cnn_method, args.word_embedding_dim, args.cnn_kernel_num,
-        #                          args.cnn_window_size)
-        # self.body_conv = Conv1D(args.cnn_method, args.word_embedding_dim, args.cnn_kernel_num,
-        #                         args.cnn_window_size)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
                                       args.max_body_len)
-        # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.n_heads * args.n_dim, args.max_title_len,
-        #                               args.max_body_len)
-
-        if args.pretrain == 'glove':
-            with open(self.word_embedding_path, 'rb') as word_embedding_f:
-                self.word_embedding.weight.data.copy_(pickle.load(word_embedding_f))
 
     # Input
     # title_text          : [batch_size, news_num, max_title_length]
@@ -78,39 +64,11 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        # title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
-        # body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
-
-        # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
-        # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
-
-        # title_emb = self.dropout(
-        #     self.multihead_attention_t(title_emb, title_emb, title_emb, title_mask))  # [B * L, N, d]
-        # body_emb = self.dropout(
-        #     self.multihead_attention_t(body_emb, body_emb, body_emb, body_mask))  # [B * L, N, d]
-
-        # all_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
-        # all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
-
-        # masked_word_emb = torch.cat([title_emb, body_emb], dim=1)  # [B * L, N + M, d]
-
         title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
         body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
         title_emb = title_output.last_hidden_state
         body_emb = body_output.last_hidden_state
-        # input_emb = torch.cat([title_text, body_text], dim=1)
-        # input_mask = torch.cat([title_mask, body_mask], dim=1)
-        # bert_output = self.bert_model(input_ids=input_text, attention_mask=input_mask)
-        # word_emb = bert_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N, d]
-        # word_emb = self.word_embedding(input_text)
 
-        # worb_emb = self.dropout(self.word_embedding(input_text))
-        # c = self.dropout(self.multihead_attention(all_emb, all_emb, all_emb,
-        #                                           all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
-        # c = c[:, :self.max_title_len, :]
-
-        # title_emb = self.dropout(self.word_embedding(title_text))
-        # body_emb = self.dropout(self.word_embedding(body_text))
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
 
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
@@ -142,16 +100,6 @@ class NewsEncoder(nn.Module):
 
         # only for stopwords???
         masked_title_text, masked_index, masked_voca_id = self.mask_tokens(title_text, title_mask)
-        # title_emb = self.dropout(self.word_embedding(masked_title_text))
-        # body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
-
-        # masked_emb = torch.cat([title_masked_emb, body_emb], dim=1)  # [B * L, N + M, d]
-        # c_masked = self.dropout(self.multihead_attention(masked_emb, masked_emb, masked_emb,
-        #                                                  all_mask))  # [batch_size * news_num, max_sentence_length, news_embedding_dim]
-        # c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
-
-        # title_emb = self.dropout(self.title_conv(title_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, N, d]
-        # body_emb = self.dropout(self.body_conv(body_emb.permute(0, 2, 1)).permute(0, 2, 1))  # [B * L, M, d]
 
         title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
         body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
@@ -188,6 +136,8 @@ class NewsEncoder(nn.Module):
         news_representation = torch.cat(
             [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
             dim=2)  # [batch_size, news_num, news_embedding_dim]
+
+        news_representation = self.reduce_dim_linear(news_representation)
         return news_representation
 
     def mask_tokens(self, title_text: torch.Tensor, title_mask: torch.Tensor, mlm_probability=0.15):

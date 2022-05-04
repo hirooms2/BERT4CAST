@@ -27,11 +27,12 @@ class Model(nn.Module):
 
     def forward(self,
                 user_features, log_mask, news_features, label,
-                compute_loss=True):
+                compute_loss=True, stage='CTR'):
         """
         Returns:
           click_probability: batch_size, 1 + K
         """
+
         # input_ids: batch, history, num_words
         news_vec = self.news_encoder(news_features)  # [batch_size, news_num, hidden_size+c]
         score_lm, masked_index, masked_voca_id = self.news_encoder.forward_lm(news_features)
@@ -47,8 +48,8 @@ class Model(nn.Module):
         if compute_loss:
             loss_ctr = self.criterion(score, label)
             loss_lm = self.criterion(score_lm, masked_voca_id)
-            # loss = (1 - self.args.reg_term) * loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
-            loss = (1-self.args.reg_term)*loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
+
+            loss = (1 - self.args.reg_term) * loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
 
             # loss = loss_ctr + args.lambda * loss_lm
             return loss, loss_lm, score
