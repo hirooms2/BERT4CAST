@@ -48,7 +48,7 @@ class Model(nn.Module):
             loss_ctr = self.criterion(score, label)
             loss_lm = self.criterion(score_lm, masked_voca_id)
             # loss = (1 - self.args.reg_term) * loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
-            loss = loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
+            loss = (1-self.args.reg_term)*loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
 
             # loss = loss_ctr + args.lambda * loss_lm
             return loss, loss_lm, score
