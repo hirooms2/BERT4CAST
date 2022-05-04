@@ -61,6 +61,11 @@ def train(args, model, train_dataloader, dev_dataloader):
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
 
     for ep in range(args.epoch):
+        if ep<2:
+            args.reg_term=1 # LM 만 학습
+        else:
+            args.reg_term=0 # CTR 만 학습
+    
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
             loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
@@ -237,7 +242,8 @@ if __name__ == '__main__':
     # albert-base-v2
     # bert-base-uncased
     # roberta-base
-    bert_name = 'textattack/bert-base-uncased-ag-news'
+    #'textattack/bert-base-uncased-ag-news'
+    bert_name = args.bert_name
     tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
     bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
