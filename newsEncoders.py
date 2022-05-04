@@ -23,7 +23,7 @@ class NewsEncoder(nn.Module):
         nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim, args.news_dim)
+        #self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim, args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
@@ -32,7 +32,7 @@ class NewsEncoder(nn.Module):
         self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
+        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.word_embedding_dim, args.max_title_len,
                                       args.max_body_len)
 
     # Input
@@ -137,7 +137,7 @@ class NewsEncoder(nn.Module):
             [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
             dim=2)  # [batch_size, news_num, news_embedding_dim]
 
-        news_representation = self.reduce_dim_linear(news_representation)
+        # news_representation = self.reduce_dim_linear(news_representation)
         return news_representation
 
     def mask_tokens(self, title_text: torch.Tensor, title_mask: torch.Tensor, mlm_probability=0.15):

@@ -56,7 +56,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     best_auc, best_epoch = 0, 0
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
-
+    
     for ep in range(args.epoch):
         # if ep<2:
         #     args.reg_term=1 # LM 만 학습
@@ -277,6 +277,15 @@ if __name__ == '__main__':
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 
     model = Model(args, bert_model, tokenizer, word_embedding_path)
+    ## after
+    hard_model_path='/home/work/BERT4CAST/bertmodel_save/model_after_ep1/_ep2_reg_change_origin1'
+    hard_model_name = hard_model_path.split('/')[-1][:-1] #TODO epoch 10 넘어가면 수정필요!
+    model.load_state_dict(torch.load('/home/work/BERT4CAST/bertmodel_save/model_after_ep1/_ep2_reg_change_origin1', map_location=torch.device('cpu'))[hard_model_name])
+    modules = [model.news_encoder.bert_model.embeddings, model.news_encoder.bert_model.encoder.layer[:args.n_layer]] # 싹다 끔 -> 캐스트만 돌아감
+    for module in modules:
+        for param in module.parameters():
+            param.requires_grad = False
+    ## after end
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     train_dataset = DatasetTrain(
