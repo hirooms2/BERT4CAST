@@ -16,6 +16,11 @@ class AdditiveAttention(nn.Module):
         self.att_fc1 = nn.Linear(d_h, hidden_size)
         self.att_fc2 = nn.Linear(hidden_size, 1)
 
+    def initialize(self):
+        nn.init.xavier_uniform_(self.att_fc1.weight, gain=nn.init.calculate_gain('tanh'))
+        nn.init.zeros_(self.att_fc1.bias)
+        nn.init.xavier_uniform_(self.att_fc2.weight)
+
     def forward(self, x, attn_mask=None):
         """
         Args:
@@ -112,16 +117,20 @@ class Context_Aware_Att(nn.Module):
 
         self.n_heads = nb_head
         self.d_k = size_per_head
-        self.output_dim = nb_head * size_per_head
+        self.hidden_size = nb_head * size_per_head
 
         self.len_q = len_q
         self.len_k = len_k
 
         self.attention_scalar = math.sqrt(float(self.d_k))
 
-        self.W_Q = nn.Linear(in_features=d_model, out_features=self.output_dim, bias=True)
-        self.W_K = nn.Linear(in_features=d_model, out_features=self.output_dim, bias=True)
-        self.W_V = nn.Linear(in_features=d_model, out_features=self.output_dim, bias=True)
+        self.W_Q = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
+        self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
+        self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
+
+        # self.F1 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
+        # self.F2 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
+        # self.layernorm = nn.LayerNorm(self.hidden_size)
 
     def initialize(self):
         nn.init.xavier_uniform_(self.W_Q.weight)
@@ -158,12 +167,16 @@ class Context_Aware_Att(nn.Module):
         V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
 
         # [B, nh, N, nd] x [B, nh, nd, M] = [B, nh, N, M]
-        context, attn = ScaledDotProductAttention(self.d_k)(
+        hidden, attn = ScaledDotProductAttention(self.d_k)(
             Q_seq, K_seq, V_seq, mask)  # [bz, 20, seq_len, 20]
-        context = context.transpose(1, 2).contiguous().view(
-            batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
+        hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
 
-        return context
+        # # Point-wise Feed-forward
+        # new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
+        # new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
+        # hidden = self.layernorm(hidden + new_hidden)
+
+        return hidden
 
 
 class MultiHeadAttention(nn.Module):

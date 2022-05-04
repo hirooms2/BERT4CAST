@@ -58,6 +58,11 @@ def train(args, model, train_dataloader, dev_dataloader):
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
 
     for ep in range(args.epoch):
+        # if ep<2:
+        #     args.reg_term=1 # LM 만 학습
+        # else:
+        #     args.reg_term=0 # CTR 만 학습
+    
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
             loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
@@ -227,17 +232,25 @@ def print_num_param(model):
 
 if __name__ == '__main__':
     args = parse_args()
+    if torch.cuda.device_count() > 1:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(device)
 
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    # albert-base-v2
+    # bert-base-uncased
+    # roberta-base
+    #'textattack/bert-base-uncased-ag-news'
+    bert_name = args.bert_name
+    tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
-    bert_config = AutoConfig.from_pretrained("bert-base-uncased", output_hidden_states=True)
-    # bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
-    #
-    # if args.n_layer > 2:
-    #     modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
-    #     for module in modules:
-    #         for param in module.parameters():
-    #             param.requires_grad = False
+    bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
+
+    if args.n_layer > 2 and 'albert' not in args.bert_name:
+        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]] # 2개 남기기
+        for module in modules:
+            for param in module.parameters():
+                param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
@@ -263,7 +276,7 @@ if __name__ == '__main__':
 
     news_combined = get_doc_input(news, news_index, category_dict, subcategory_dict, args)
 
-    model = Model(args, tokenizer, word_embedding_path)
+    model = Model(args, bert_model, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
     train_dataset = DatasetTrain(
