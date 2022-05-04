@@ -237,13 +237,15 @@ if __name__ == '__main__':
     # albert-base-v2
     # bert-base-uncased
     # roberta-base
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    # distilbert-base-uncased
+    bert_name = 'textattack/bert-base-uncased-ag-news'
+    tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
-    bert_config = AutoConfig.from_pretrained("bert-base-uncased", output_hidden_states=True)
-    bert_model = AutoModel.from_pretrained("bert-base-uncased", config=bert_config)
+    bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
     if args.n_layer > 2:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer]]
+        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
         for module in modules:
             for param in module.parameters():
                 param.requires_grad = False

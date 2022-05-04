@@ -83,7 +83,10 @@ class NewsEncoder(nn.Module):
         title_emb = self.dropout(self.word_embedding(title_text))  # [B * L, N, d]
         body_emb = self.dropout(self.word_embedding(body_text))  # [B * L, M, d]
 
-        rel_score = torch.matmul(title_emb, body_emb.transpose(2, 1))  # [B * L, N, M]
+        title_emb_n = title_emb / (torch.norm(title_emb, dim=2, keepdim=True) + 1e-10)
+        body_emb_n = body_emb / (torch.norm(body_emb, dim=2, keepdim=True) + 1e-10)
+
+        rel_score = torch.matmul(title_emb_n, body_emb_n.transpose(2, 1))  # [B * L, N, M]
         rel_indices = torch.topk(rel_score, k=self.selection)[1]  # [B * L, N, K]
         news_mask = torch.zeros(rel_score.size(), device=self.device)
         news_mask = news_mask.scatter_(2, rel_indices, 1)
