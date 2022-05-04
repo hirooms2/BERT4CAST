@@ -42,7 +42,7 @@ def parse_args():
 
     parser.add_argument('--dropout_rate', type=float, default=0.2, help='Dropout rate')
     parser.add_argument('--attention_dim', type=int, default=200, help="Attention dimension")
-    parser.add_argument('--word_embedding_dim', type=int, default=768, help='Word embedding dimension')
+    parser.add_argument('--word_embedding_dim', type=int, default=128, help='Word embedding dimension')
     parser.add_argument('--glove_dim', type=int, default=300, help='Word embedding dimension')
 
     parser.add_argument('--cnn_method', type=str, default='naive', choices=['naive', 'group3', 'group4', 'group5'],

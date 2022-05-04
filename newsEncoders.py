@@ -40,7 +40,7 @@ class NewsEncoder(nn.Module):
         #                         args.cnn_window_size)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.word_embedding_dim, args.max_title_len,
+        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
                                       args.max_body_len)
         # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.n_heads * args.n_dim, args.max_title_len,
         #                               args.max_body_len)
