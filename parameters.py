@@ -30,11 +30,11 @@ def parse_args():
     parser.add_argument('--epoch', type=int, default=5)
     parser.add_argument('--batch_size', type=int, default=3)
 
-    parser.add_argument('--reg_term', type=float, default=0.1, help='Regularization Term (Lambda) ')  # reg_term
+    parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ')  # reg_term
 
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
     parser.add_argument('--n_heads', type=int, default=12, help='Head number of multi-head self-attention')
-    parser.add_argument('--n_dim', type=int, default=64, help='dimension of each head')
+    parser.add_argument('--n_dim', type=int, default=20, help='dimension of each head')
     parser.add_argument('--news_dim', type=int, default=64, help='Head number of multi-head self-attention')
 
     parser.add_argument('--position_dim', type=int, default=300, help='Positional dimension of user encoder')
