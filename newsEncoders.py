@@ -23,7 +23,8 @@ class NewsEncoder(nn.Module):
         nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
         self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim, args.news_dim)
+        self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim,
+                                           args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
@@ -70,11 +71,9 @@ class NewsEncoder(nn.Module):
         body_emb = body_output.last_hidden_state
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
-
         title_rep = self.attention(c, title_mask).view(batch_size, news_num,
                                                        -1)  # [batch_size, news_num, hidden_size]
         news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
-        # news_rep = self.reduce_dim_linear(news_rep)
 
         return news_rep
 

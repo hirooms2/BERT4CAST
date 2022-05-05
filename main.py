@@ -16,6 +16,7 @@ from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
 
+
 ##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
@@ -62,12 +63,11 @@ def train(args, model, train_dataloader, dev_dataloader):
         #     args.reg_term=1 # LM 만 학습
         # else:
         #     args.reg_term=0 # CTR 만 학습
-    
+
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
-            loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
+            loss = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
-            total_loss_lm += loss_lm.data.float()
 
             optimizer.zero_grad()
             loss.backward()
@@ -83,8 +83,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         hits = []
         with torch.no_grad():
             for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
-                score_lm, masked_index = mlm
+                scores = model(user_features, log_mask, news_features, label, compute_loss=False)
 
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
@@ -101,15 +100,6 @@ def train(args, model, train_dataloader, dev_dataloader):
                 mrrs.append(mrr)
                 ndcg5s.append(ndcg5)
                 ndcg10s.append(ndcg10)
-
-                sub_scores_lm = score_lm.topk(10)[1]
-                sub_scores_lm = sub_scores_lm.cpu().numpy()
-                title_text = news_features[0].squeeze(0).cpu().numpy()
-                masked_index = masked_index.cpu().numpy()
-
-                for (title, midx, s_score) in zip(title_text, masked_index, sub_scores_lm):
-                    target = title[midx]
-                    hits.append(np.isin(target, s_score))
 
         auc = np.mean(aucs)
         mrr = np.mean(mrrs)
@@ -139,7 +129,6 @@ def train(args, model, train_dataloader, dev_dataloader):
                 'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\t'.format(auc, mrr,
                                                                                                         ndcg5, ndcg10,
                                                                                                         hit))
-
             result_f.write(get_time_kst())
             result_f.write('\n')
 
@@ -239,7 +228,7 @@ if __name__ == '__main__':
     # albert-base-v2
     # bert-base-uncased
     # roberta-base
-    #'textattack/bert-base-uncased-ag-news'
+    # 'textattack/bert-base-uncased-ag-news'
     bert_name = args.bert_name
     tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
@@ -247,7 +236,7 @@ if __name__ == '__main__':
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
     if args.n_layer > 2 and 'albert' not in args.bert_name:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]] # 2개 남기기
+        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]  # 2개 남기기
         for module in modules:
             for param in module.parameters():
                 param.requires_grad = False
