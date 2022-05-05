@@ -24,6 +24,11 @@ class Model(nn.Module):
         self.user_encoder = UserEncoder(args)
 
         self.criterion = nn.CrossEntropyLoss()
+        self.initialize()
+
+    def initialize(self):
+        self.news_encoder.initialize()
+        self.user_encoder.initialize()
 
     def forward(self,
                 user_features, log_mask, news_features, label,

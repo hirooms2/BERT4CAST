@@ -102,7 +102,6 @@ class DatasetTrain(MindDataset):
 
     def __getitem__(self, item):
 
-        label = 0
         user_idx, user_history, click_impressions, non_click_impressions = self.behaviors[item]
 
         click_docs, log_mask = self.pad_to_fix_len(self.trans_to_nindex(user_history),

@@ -36,6 +36,12 @@ class NewsEncoder(nn.Module):
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
                                       args.max_body_len)
 
+    def initialize(self):
+        nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
+        nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
+        self.cast.initialize()
+        self.attention.initialize()
+
     # Input
     # title_text          : [batch_size, news_num, max_title_length]
     # title_mask          : [batch_size, news_num, max_title_length]

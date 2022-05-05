@@ -6,42 +6,30 @@ import math
 
 
 class AdditiveAttention(nn.Module):
-    ''' AttentionPooling used to weighted aggregate news vectors
-    Arg:
-        d_h: the last dimension of input
-    '''
-
-    def __init__(self, d_h, hidden_size=200):
+    def __init__(self, feature_dim: int, attention_dim: int):
         super(AdditiveAttention, self).__init__()
-        self.att_fc1 = nn.Linear(d_h, hidden_size)
-        self.att_fc2 = nn.Linear(hidden_size, 1)
+        self.affine1 = nn.Linear(in_features=feature_dim, out_features=attention_dim, bias=True)
+        self.affine2 = nn.Linear(in_features=attention_dim, out_features=1, bias=False)
 
     def initialize(self):
-        nn.init.xavier_uniform_(self.att_fc1.weight, gain=nn.init.calculate_gain('tanh'))
-        nn.init.zeros_(self.att_fc1.bias)
-        nn.init.xavier_uniform_(self.att_fc2.weight)
+        nn.init.xavier_uniform_(self.affine1.weight, gain=nn.init.calculate_gain('tanh'))
+        nn.init.zeros_(self.affine1.bias)
+        nn.init.xavier_uniform_(self.affine2.weight)
 
-    def forward(self, x, attn_mask=None):
-        """
-        Args:
-            x: batch_size, candidate_size, candidate_vector_dim
-            attn_mask: batch_size, candidate_size
-        Returns:
-            (shape) batch_size, candidate_vector_dim
-        """
-        bz = x.shape[0]
-        e = self.att_fc1(x)
-        e = nn.Tanh()(e)
-        alpha = self.att_fc2(e)
-
-        alpha = torch.exp(alpha)
-        if attn_mask is not None:
-            alpha = alpha * attn_mask.unsqueeze(2)
-        alpha = alpha / (torch.sum(alpha, dim=1, keepdim=True) + 1e-8)
-
-        x = torch.bmm(x.permute(0, 2, 1), alpha)
-        x = torch.reshape(x, (bz, -1))  # (bz, 400)
-        return x
+    # Input
+    # feature : [batch_size, length, feature_dim]
+    # mask    : [batch_size, length]
+    # Output
+    # out     : [batch_size, feature_dim]
+    def forward(self, feature, mask=None):
+        attention = torch.tanh(self.affine1(feature))  # [batch_size, length, attention_dim]
+        a = self.affine2(attention).squeeze(dim=2)  # [batch_size, length]
+        if mask is not None:
+            alpha = F.softmax(a.masked_fill(mask == 0, -1e9), dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        else:
+            alpha = F.softmax(a, dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        out = torch.bmm(alpha, feature).squeeze(dim=1)  # [batch_size, feature_dim]
+        return out
 
 
 class ScaledDotProductAttention(nn.Module):

@@ -105,12 +105,11 @@ def train(args, model, train_dataloader, dev_dataloader):
         mrr = np.mean(mrrs)
         ndcg5 = np.mean(ndcg5s)
         ndcg10 = np.mean(ndcg10s)
-        hit = np.mean(hits)
+        # hit = np.mean(hits)
 
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
         print(
-            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM) = {:.4f}'.format(auc, mrr, ndcg5,
-                                                                                                        ndcg10, hit))
+            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}'.format(auc, mrr, ndcg5, ndcg10))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
@@ -126,9 +125,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
             # LM Loss 기록
             result_f.write(
-                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\t'.format(auc, mrr,
-                                                                                                        ndcg5, ndcg10,
-                                                                                                        hit))
+                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
             result_f.write(get_time_kst())
             result_f.write('\n')
 
