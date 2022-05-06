@@ -53,7 +53,7 @@ class UserEncoder(torch.nn.Module):
         news_vec = news_vec.unsqueeze(dim=2).expand(-1, -1, hist_len, -1)  # [batch_size, news_num, hist_len, news_dim]
         log_vec = log_vec.unsqueeze(dim=1).expand(-1, news_num, -1, -1)  # [batch_size, news_num, hist_len, news_dim]
         _con = torch.cat([news_vec, log_vec], dim=3)  # [batch_size, news_num, hist_len, 2 * news_dim]
-        logits = self.affine2(torch.relu(self.affine1(_con))).squeeze(dim=3)  # [batch, news_num, hist_len]
+        logits = self.affine2(torch.tanh(self.affine1(_con))).squeeze(dim=3)  # [batch, news_num, hist_len]
         attention = F.softmax(logits.masked_fill(log_mask == 0, -1e9), dim=2)  # [batch, news_num, hist_len]
         user_log_vecs = (attention.unsqueeze(dim=3) * log_vec).sum(dim=2)  # [batch, news_num, news_dim]
 

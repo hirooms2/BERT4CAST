@@ -150,13 +150,15 @@ class Context_Aware_Att(nn.Module):
         body_mask = body_mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [B, N, M]
         mask = torch.cat([mask, body_mask], dim=2)  # [B, N, N+M]
         mask = mask * title_mask.unsqueeze(-1)  # [B, N, N+M]
-
         mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
+
         Q_seq = self.W_Q(Q_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N, nd]
         K_seq = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
         V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
+
         logits = torch.matmul(Q_seq, K_seq.transpose(-1, -2)) / np.sqrt(self.d_k)  # [B, nh, N, N+M]
         attn = F.softmax(logits.masked_fill(mask == 0, -1e9), dim=3)  # [B, nh, N, N+M]
+
         hidden = torch.matmul(attn, V_seq)  # [B, nh, N, nd]
         hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
 

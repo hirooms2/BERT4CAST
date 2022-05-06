@@ -68,14 +68,19 @@ class NewsEncoder(nn.Module):
             [batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_mask = body_mask.view(
             [batch_size * news_num, self.max_body_len])  # [B * L, M]
+        all_mask = torch.cat([title_mask, body_mask], dim=1)
 
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
+        all_text = torch.cat([title_text, body_text], dim=1)  # [B * L, N+M]
 
-        title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        title_emb = title_output.last_hidden_state
-        body_emb = body_output.last_hidden_state
+        # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
+        # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
+        # title_emb = title_output.last_hidden_state
+        # body_emb = body_output.last_hidden_state
+        all_output = self.bert_model(input_ids=all_text, attention_mask=all_mask)
+        title_emb = all_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N+M, d]
+        body_emb = all_output.last_hidden_state[:, self.max_title_len:, :]  # [B * L, N+M, d]
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
