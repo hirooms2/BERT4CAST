@@ -251,7 +251,7 @@ if __name__ == '__main__':
         glove(word_dict, args.word_embedding_dim, word_embedding_path)
         # glove(word_dict, args.glove_dim, word_embedding_path)
 
-    news_file = f'news_t{args.max_title_len}_b{args.max_body_len}.txt'
+    news_file = f'news_t{args.max_title_len}_b{args.max_body_len}_{args.body_type}.txt'
     if not os.path.exists(os.path.join(text_path, news_file)):
         news, news_index, category_dict, subcategory_dict = read_news(data_path, args, tokenizer)
         save_news(news_file, text_path, news, news_index, category_dict, subcategory_dict)

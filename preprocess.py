@@ -92,9 +92,13 @@ def read_news(data_path, args, tokenizer):
                                   add_special_tokens=False)
 
                 # body = remove_stopwords(body.lower()[:2000])
-                body = body.lower()
+                if args.body_type == 'body':
+                    body = body.lower()
+                else:
+                    body = sbody.lower()
+
                 body = tokenizer(body, max_length=args.max_body_len, padding='max_length', truncation=True,
-                                  add_special_tokens=False)
+                                 add_special_tokens=False)
 
                 categories.append(category)
                 subcategories.append(subcategory)
