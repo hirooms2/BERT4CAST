@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('--pretrain', type=str, default='bert')
     parser.add_argument('--body_type', type=str, default='body')
 
-    parser.add_argument('--n_layer', type=int, default=2)
+    parser.add_argument('--n_layer', type=int, default=0)
     parser.add_argument('--max_hist_len', type=int, default=50)
     parser.add_argument('--max_title_len', type=int, default=30)
     parser.add_argument('--max_body_len', type=int, default=80)

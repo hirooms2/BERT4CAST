@@ -235,7 +235,7 @@ if __name__ == '__main__':
     bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
-    modules = [bert_model.embeddings, bert_model.encoder.layer[:-args.n_layer]]  # 2개 남기기
+    modules = [bert_model.embeddings, bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
     for module in modules:
         for param in module.parameters():
             param.requires_grad = False
