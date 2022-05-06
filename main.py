@@ -65,7 +65,8 @@ def train(args, model, train_dataloader, dev_dataloader):
         #     args.reg_term=0 # CTR 만 학습
 
         total_loss, total_loss_lm = 0.0, 0.0
-        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
+        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader,
+                                                                    bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
             loss = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
 
@@ -82,7 +83,8 @@ def train(args, model, train_dataloader, dev_dataloader):
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
         hits = []
         with torch.no_grad():
-            for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
+            for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader,
+                                                                        bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
                 scores = model(user_features, log_mask, news_features, label, compute_loss=False)
 
                 scores = scores.view(-1).cpu().numpy()
@@ -166,7 +168,8 @@ def test(args, model, test_dataloader, tokenizer):
     results_lm = []
     hit = []
     with torch.no_grad():
-        for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
+        for idx, (user_features, log_mask, news_features, label) in enumerate(
+                tqdm(test_dataloader, bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}')):
             scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
             score_lm, masked_index = mlm
 
@@ -232,11 +235,10 @@ if __name__ == '__main__':
     bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
-    if args.n_layer > 2 and 'albert' not in args.bert_name:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]  # 2개 남기기
-        for module in modules:
-            for param in module.parameters():
-                param.requires_grad = False
+    modules = [bert_model.embeddings, bert_model.encoder.layer[:-args.n_layer]]  # 2개 남기기
+    for module in modules:
+        for param in module.parameters():
+            param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')

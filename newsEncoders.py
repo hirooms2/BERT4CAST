@@ -14,23 +14,24 @@ class NewsEncoder(nn.Module):
         self.max_body_len = args.max_body_len
         self.word_embedding_dim = args.word_embedding_dim
         self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
+        self.hidden_size = args.n_heads * args.n_dim
 
         self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim,
                                                padding_idx=0)
         self.subCategory_embedding = nn.Embedding(num_embeddings=args.subcategory_num,
                                                   embedding_dim=args.subcategory_dim, padding_idx=0)
-        nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
-        nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
 
-        self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        self.reduce_dim_linear = nn.Linear(args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim,
-                                           args.news_dim)
+        # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
+        self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
+
+        self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
         self.word_embedding_path = word_embedding_path
 
-        self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        # self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        self.attention = AdditiveAttention(self.hidden_size, args.attention_dim)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
@@ -77,56 +78,55 @@ class NewsEncoder(nn.Module):
         body_emb = body_output.last_hidden_state
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
-        title_rep = self.attention(c, title_mask).view(batch_size, news_num,
-                                                       -1)  # [batch_size, news_num, hidden_size]
+        title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
         news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
 
         return news_rep
 
-    def forward_lm(self, news_features):
-        title_text = news_features[0]
-        title_mask = news_features[1]
-        body_text = news_features[2]
-        body_mask = news_features[3]
-        category = news_features[4]
-        sub_category = news_features[5]
-
-        batch_size = category.size(0)
-        news_num = category.size(1)
-
-        title_mask = title_mask.view(
-            [batch_size * news_num, self.max_title_len])  # [B * L, N]
-        body_mask = body_mask.view(
-            [batch_size * news_num, self.max_body_len])  # [B * L, M]
-        all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
-
-        title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
-        body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
-
-        # only for stopwords???
-        masked_title_text, masked_index, masked_voca_id = self.mask_tokens(title_text, title_mask)
-
-        title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        title_emb = title_output.last_hidden_state
-        body_emb = body_output.last_hidden_state
-
-        c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
-        c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
-        # c_masked = c_masked[:, 0]
-
-        # check point::: [d, V]???
-        # score_lm = self.linear_output(c_masked)
-
-        # Loss_LM 만드는 부분
-        a = self.linear_output(c_masked)
-        # a = c_masked
-        b = self.bert_model.embeddings.word_embeddings.weight[:]
-        # b = self.word_embedding.weight[:]
-
-        score_lm = torch.matmul(a, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
-
-        return score_lm, masked_index, masked_voca_id
+    # def forward_lm(self, news_features):
+    #     title_text = news_features[0]
+    #     title_mask = news_features[1]
+    #     body_text = news_features[2]
+    #     body_mask = news_features[3]
+    #     category = news_features[4]
+    #     sub_category = news_features[5]
+    #
+    #     batch_size = category.size(0)
+    #     news_num = category.size(1)
+    #
+    #     title_mask = title_mask.view(
+    #         [batch_size * news_num, self.max_title_len])  # [B * L, N]
+    #     body_mask = body_mask.view(
+    #         [batch_size * news_num, self.max_body_len])  # [B * L, M]
+    #     all_mask = torch.cat([title_mask, body_mask], dim=1)  # [B * L, N + M]
+    #
+    #     title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
+    #     body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
+    #
+    #     # only for stopwords???
+    #     masked_title_text, masked_index, masked_voca_id = self.mask_tokens(title_text, title_mask)
+    #
+    #     title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
+    #     body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
+    #     title_emb = title_output.last_hidden_state
+    #     body_emb = body_output.last_hidden_state
+    #
+    #     c_masked = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+    #     c_masked = c_masked[torch.arange(batch_size * news_num), masked_index]
+    #     # c_masked = c_masked[:, 0]
+    #
+    #     # check point::: [d, V]???
+    #     # score_lm = self.linear_output(c_masked)
+    #
+    #     # Loss_LM 만드는 부분
+    #     a = self.linear_output(c_masked)
+    #     # a = c_masked
+    #     b = self.bert_model.embeddings.word_embeddings.weight[:]
+    #     # b = self.word_embedding.weight[:]
+    #
+    #     score_lm = torch.matmul(a, b.transpose(1, 0))  # [B, d] x [d, N] = [B, N]
+    #
+    #     return score_lm, masked_index, masked_voca_id
 
     # Input
     # news_representation : [batch_size, news_num, unfused_news_embedding_dim]

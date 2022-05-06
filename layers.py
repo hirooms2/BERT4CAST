@@ -112,9 +112,10 @@ class Context_Aware_Att(nn.Module):
 
         self.attention_scalar = math.sqrt(float(self.d_k))
 
-        self.W_Q = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
-        self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
-        self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
+        self.W_Q = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        # self.W_P = nn.Linear(in_features=self.hidden_size, out_features=1)
 
         # self.F1 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
         # self.F2 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
@@ -141,28 +142,23 @@ class Context_Aware_Att(nn.Module):
         title_len = Q_seq.size(1)
         body_len = Q_seq.size(2)
 
-        K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d] Body, Title
-        V_seq = torch.cat([V_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
+        K_seq = torch.cat([Q_seq, K_seq], 1)  # [B, M, d] -> [B, N+M, d] Body, Title
+        V_seq = torch.cat([Q_seq, V_seq], 1)  # [B, M, d] -> [B, N+M, d]
 
-        mask = torch.cat([body_mask, title_mask], dim=1)  # [B, N+M]
-        mask = mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N+M]
-        mask = mask * title_mask.unsqueeze(-1)
+        # mask = torch.cat([body_mask, title_mask], dim=1)  # [B, N+M]
+        mask = title_mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N]
+        body_mask = body_mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [B, N, M]
+        mask = torch.cat([mask, body_mask], dim=2)  # [B, N, N+M]
+        mask = mask * title_mask.unsqueeze(-1)  # [B, N, N+M]
 
         mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
-
         Q_seq = self.W_Q(Q_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N, nd]
         K_seq = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
         V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
-
-        # [B, nh, N, nd] x [B, nh, nd, M] = [B, nh, N, M]
-        hidden, attn = ScaledDotProductAttention(self.d_k)(
-            Q_seq, K_seq, V_seq, mask)  # [bz, 20, seq_len, 20]
+        logits = torch.matmul(Q_seq, K_seq.transpose(-1, -2)) / np.sqrt(self.d_k)  # [B, nh, N, N+M]
+        attn = F.softmax(logits.masked_fill(mask == 0, -1e9), dim=3)  # [B, nh, N, N+M]
+        hidden = torch.matmul(attn, V_seq)  # [B, nh, N, nd]
         hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
-
-        # # Point-wise Feed-forward
-        # new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
-        # new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
-        # hidden = self.layernorm(hidden + new_hidden)
 
         return hidden
 
