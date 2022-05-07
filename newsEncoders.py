@@ -13,7 +13,7 @@ class NewsEncoder(nn.Module):
         self.max_title_len = args.max_title_len
         self.max_body_len = args.max_body_len
         self.word_embedding_dim = args.word_embedding_dim
-        self.word_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=self.word_embedding_dim)
+        self.glove_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=args.glove_dim)
         self.hidden_size = args.n_heads * args.n_dim
 
         self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim,
@@ -23,6 +23,7 @@ class NewsEncoder(nn.Module):
 
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
+        self.linear_word = nn.Linear(args.word_embedding_dim + args.glove_dim, args.hidden_size)
 
         self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
 
@@ -34,8 +35,11 @@ class NewsEncoder(nn.Module):
         self.attention = AdditiveAttention(self.hidden_size, args.attention_dim)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, self.bert_model.config.hidden_size, args.max_title_len,
+        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len,
                                       args.max_body_len)
+
+        with open(self.word_embedding_path, 'rb') as word_embedding_f:
+            self.glove_embedding.weight.data.copy_(pickle.load(word_embedding_f))
 
     def initialize(self):
         nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
@@ -68,19 +72,17 @@ class NewsEncoder(nn.Module):
             [batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_mask = body_mask.view(
             [batch_size * news_num, self.max_body_len])  # [B * L, M]
-        all_mask = torch.cat([title_mask, body_mask], dim=1)
 
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
-        all_text = torch.cat([title_text, body_text], dim=1)  # [B * L, N+M]
 
-        # title_output = self.bert_model(input_ids=title_text, attention_mask=title_mask)
-        # body_output = self.bert_model(input_ids=body_text, attention_mask=body_mask)
-        # title_emb = title_output.last_hidden_state
-        # body_emb = body_output.last_hidden_state
-        all_output = self.bert_model(input_ids=all_text, attention_mask=all_mask)
-        title_emb = all_output.last_hidden_state[:, :self.max_title_len, :]  # [B * L, N+M, d]
-        body_emb = all_output.last_hidden_state[:, self.max_title_len:, :]  # [B * L, N+M, d]
+        title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
+        body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
+        title_glove = self.glove_embedding(title_text)
+        body_glove = self.glove_embedding(body_text)
+
+        title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
+        body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
