@@ -22,10 +22,10 @@ class NewsEncoder(nn.Module):
                                                   embedding_dim=args.subcategory_dim, padding_idx=0)
 
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
-        self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
+        # self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
         self.linear_word = nn.Linear(args.word_embedding_dim + args.glove_dim, args.hidden_size)
 
-        self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
+        # self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
@@ -149,7 +149,7 @@ class NewsEncoder(nn.Module):
             [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
             dim=2)  # [batch_size, news_num, news_embedding_dim]
 
-        news_representation = self.reduce_dim_linear(news_representation)
+        # news_representation = self.reduce_dim_linear(news_representation)
         return news_representation
 
     def mask_tokens(self, title_text: torch.Tensor, title_mask: torch.Tensor, mlm_probability=0.15):
