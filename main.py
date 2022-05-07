@@ -232,7 +232,8 @@ if __name__ == '__main__':
     bert_name = args.bert_name
     tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
-    bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    # bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    bert_config = AutoConfig.from_pretrained(bert_name)
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
     modules = [bert_model.embeddings, bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
