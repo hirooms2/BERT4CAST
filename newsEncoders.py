@@ -79,11 +79,11 @@ class NewsEncoder(nn.Module):
 
         title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
         body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
-        title_glove = self.glove_embedding(title_text) * self.scalar
-        body_glove = self.glove_embedding(body_text) * self.scalar
+        title_glove = self.glove_embedding(title_text)
+        body_glove = self.glove_embedding(body_text)
 
-        title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
-        body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
+        title_emb = self.linear_word(torch.cat([title_bert * self.scalar, title_glove], dim=2))
+        body_emb = self.linear_word(torch.cat([body_bert * self.scalar, body_glove], dim=2))
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
