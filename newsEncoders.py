@@ -82,11 +82,7 @@ class NewsEncoder(nn.Module):
         title_glove = self.glove_embedding(title_text) * self.scalar
         body_glove = self.glove_embedding(body_text) * self.scalar
 
-        title_bert_norm = torch.norm(title_bert, dim=2)
-        title_glove_norm = torch.norm(title_glove, dim=2)
         title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
-        title_emb_norm = torch.norm(title_emb, dim=2)
-
         body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
