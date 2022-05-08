@@ -16,7 +16,6 @@ from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
 
-
 ##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
@@ -39,7 +38,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    results_file_path = f'./results/train_device_{args.device_id}_{args.name}.txt'
+    results_file_path = f"./results/train_device_{args.device_id}_{str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M'))}_{args.name}.txt"
     # results_file_path = './results/train_device_%d.txt' % args.device_id
 
     # Only For Best Result
