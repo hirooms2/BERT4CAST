@@ -24,6 +24,7 @@ class NewsEncoder(nn.Module):
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         # self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
         self.linear_word = nn.Linear(args.word_embedding_dim + args.glove_dim, args.hidden_size)
+        self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=True)
 
         # self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
 
@@ -78,10 +79,14 @@ class NewsEncoder(nn.Module):
 
         title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
         body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
-        title_glove = self.glove_embedding(title_text)
-        body_glove = self.glove_embedding(body_text)
+        title_glove = self.glove_embedding(title_text) * self.scalar
+        body_glove = self.glove_embedding(body_text) * self.scalar
 
+        title_bert_norm = torch.norm(title_bert, dim=2)
+        title_glove_norm = torch.norm(title_glove, dim=2)
         title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
+        title_emb_norm = torch.norm(title_emb, dim=2)
+
         body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
