@@ -38,7 +38,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    results_file_path = f"./results/train_device_{args.device_id}_{str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M'))}_{args.name}.txt"
+    mdhm = str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M')) # MonthDailyHourMinute .....e.g., 05091040
+    results_file_path = f"./results/train_device_{args.device_id}_{mdhm}_{args.name}.txt"
     # results_file_path = './results/train_device_%d.txt' % args.device_id
 
     # Only For Best Result
@@ -139,7 +140,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
             print('save the model')
             # torch.save({model.name: model.state_dict()}, './model/' + model.name) # original save
-            torch.save({model.name: model.state_dict()}, './model/' + model.name + str(args.reg_term))  # for reg_term
+            torch.save({model.name: model.state_dict()}, f'./model/{mdhm}_{model.name}')  # TIME_MODELNAME 형식
 
         print('Best Epoch:\t%f\tBest auc:\t%f' % (best_epoch, best_auc))
 
