@@ -24,7 +24,10 @@ class NewsEncoder(nn.Module):
         # self.linear_output = nn.Linear(args.n_heads * args.n_dim, self.word_embedding_dim)
         # self.linear_output = nn.Linear(args.word_embedding_dim, args.news_dim)
         self.linear_word = nn.Linear(args.word_embedding_dim + args.glove_dim, args.hidden_size)
-        self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=True)
+        if args.scaling == 'yes':
+            self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=True)
+        else:
+            self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=False)
 
         self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
 
