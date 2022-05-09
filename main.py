@@ -16,6 +16,7 @@ from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
 
+
 ##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
@@ -38,7 +39,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    mdhm = str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M')) # MonthDailyHourMinute .....e.g., 05091040
+    mdhm = str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M'))  # MonthDailyHourMinute .....e.g., 05091040
     results_file_path = f"./results/train_device_{args.device_id}_{mdhm}_{args.name}.txt"
     # results_file_path = './results/train_device_%d.txt' % args.device_id
 
@@ -63,7 +64,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         #     args.reg_term=1 # LM 만 학습
         # else:
         #     args.reg_term=0 # CTR 만 학습
-
+        model.train()
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader,
                                                                     bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
@@ -79,7 +80,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
-
+        model.eval()
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
         hits = []
         with torch.no_grad():
@@ -156,8 +157,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 def test(args, model, test_dataloader, tokenizer):
     print('test mode start')
     # test_model_path = './model/' + model.name + str(args.reg_term)
-    temp_model_name='2stage_body_nlayer2'
-    test_model_path = './model/2stage_body_nlayer20' # debug hard coding--1
+    temp_model_name = '2stage_body_nlayer2'
+    test_model_path = './model/2stage_body_nlayer20'  # debug hard coding--1
     # model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[model.name]) # debug hard coding--2
     model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[temp_model_name])
     model.cuda(args.device_id)
