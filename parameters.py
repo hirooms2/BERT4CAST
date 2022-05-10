@@ -27,6 +27,10 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=-1, help='Seed for random number generator')
     parser.add_argument('--device_id', type=int, default=0, help='Device ID of GPU')
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
+    parser.add_argument('--lr_dc', type=float, default=0.5, help='learning rate decay.')
+    parser.add_argument('--lr_dc_step', type=int, default=3,
+                        help='the number of steps after which the learning rate decay.')
+
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
 
     parser.add_argument('--epoch', type=int, default=5)

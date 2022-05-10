@@ -74,6 +74,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        scheduler.step()
 
         print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
@@ -271,6 +272,7 @@ if __name__ == '__main__':
 
     model = Model(args, bert_model, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_dc_step, gamma=args.lr_dc)
 
     train_dataset = DatasetTrain(
         news_index=news_index,
