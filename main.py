@@ -64,7 +64,8 @@ def train(args, model, train_dataloader, dev_dataloader):
         #     args.reg_term=1 # LM 만 학습
         # else:
         #     args.reg_term=0 # CTR 만 학습
-        model.train()
+        # model.train()
+
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader,
                                                                     bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
@@ -74,14 +75,15 @@ def train(args, model, train_dataloader, dev_dataloader):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        scheduler.step()
+        # scheduler.step()
 
         print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
 
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
-        model.eval()
+        # model.eval()
+
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
         hits = []
         with torch.no_grad():

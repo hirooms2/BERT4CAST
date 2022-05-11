@@ -117,9 +117,9 @@ class Context_Aware_Att(nn.Module):
         self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size)
         # self.W_P = nn.Linear(in_features=self.hidden_size, out_features=1)
 
-        self.F1 = nn.Linear(self.hidden_size, 1024, bias=True)
-        self.F2 = nn.Linear(1024, self.hidden_size, bias=True)
-        self.layernorm = nn.LayerNorm(self.hidden_size)
+        # self.F1 = nn.Linear(self.hidden_size, 1024, bias=True)
+        # self.F2 = nn.Linear(1024, self.hidden_size, bias=True)
+        # self.layernorm = nn.LayerNorm(self.hidden_size)
 
     def initialize(self):
         nn.init.xavier_uniform_(self.W_Q.weight)
@@ -163,11 +163,11 @@ class Context_Aware_Att(nn.Module):
         # hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
         # hidden = Q_seq + hidden
 
-        new_hidden = torch.matmul(attention, V)  # [B, nh, N, nd]
-        new_hidden = new_hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
-        # # Drop-out -> Add & norm
-        new_hidden = F.dropout(new_hidden, p=0.1, training=self.training)
-        hidden = self.layernorm(Q_seq + new_hidden)
+        hidden = torch.matmul(attention, V)  # [B, nh, N, nd]
+        hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
+        # # # Drop-out -> Add & norm
+        # new_hidden = F.dropout(new_hidden, p=0.1, training=self.training)
+        # hidden = self.layernorm(Q_seq + new_hidden)
         #
         # # Point-wise Feed-forward
         # new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
