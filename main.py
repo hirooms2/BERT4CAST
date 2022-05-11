@@ -16,7 +16,6 @@ from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
 
-
 ##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
@@ -128,10 +127,11 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write('\n <Memory Usage> \n')
                     result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
-            result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
-            # LM Loss 기록
-            result_f.write(
-                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+                result_f.write(' AUC\tMRR \tnDCG@5 \tnDCG@10 \n')
+            # result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
+            result_f.write('{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+            # result_f.write(
+            #     'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
             result_f.write(get_time_kst())
             result_f.write('\n')
 
