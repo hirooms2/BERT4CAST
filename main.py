@@ -16,6 +16,7 @@ from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
 
+
 ##TODO : GIT Contributor test
 
 def get_time_kst(): return datetime.now(timezone('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
@@ -57,6 +58,11 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     best_auc, best_epoch = 0, 0
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
+
+    if args.model_path != 'none':
+        model_name = args.name
+        model_path = os.path.join('./model/', args.model_path)
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'))[model_name])
 
     for ep in range(args.epoch):
         # if ep<2:

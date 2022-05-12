@@ -15,6 +15,7 @@ def parse_args():
     parser.add_argument('--pretrain', type=str, default='bert')
     parser.add_argument('--body_type', type=str, default='body')
     parser.add_argument('--scaling', type=str, default='yes')
+    parser.add_argument('--model_path', type=str, default='none')
 
     parser.add_argument('--n_layer', type=int, default=0)
     parser.add_argument('--max_hist_len', type=int, default=50)
