@@ -13,6 +13,7 @@ from tqdm import tqdm
 try:
     stop_words = set(stopwords.words('english'))
 except:
+    import nltk
     nltk.download('stopwords')
     stop_words = set(stopwords.words('english'))
 pat = re.compile(r"[\w]+|[.,!?;|]")
