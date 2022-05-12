@@ -92,7 +92,9 @@ class NewsEncoder(nn.Module):
         # title_emb = torch.cat([title_bert * self.scalar, title_glove], dim=2)
         # body_emb = torch.cat([body_bert * self.scalar, body_glove], dim=2)
 
-        c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+        # c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
+        c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
+
         title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
         news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
 
