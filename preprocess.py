@@ -1,16 +1,20 @@
 import os
-
-from six.moves.urllib.parse import urlparse
-from tqdm import tqdm
-import numpy as np
-from torchtext.vocab import GloVe
-import torch
 import pickle
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 import re
 
-stop_words = set(stopwords.words('english'))
+import numpy as np
+import torch
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from six.moves.urllib.parse import urlparse
+from torchtext.vocab import GloVe
+from tqdm import tqdm
+
+try:
+    stop_words = set(stopwords.words('english'))
+except:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
 pat = re.compile(r"[\w]+|[.,!?;|]")
 
 
@@ -79,7 +83,7 @@ def read_news(data_path, args, tokenizer):
         text_path = os.path.join(path, 'news_with_summarized.tsv')
         with open(text_path, 'r', encoding='utf-8') as f:
 
-            for line in tqdm(f):
+            for line in tqdm(f,bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
                 splited = line.strip('\n').split('\t')
                 doc_id, category, subcategory, title, abstract, _, title_entities, _, body, sbody = splited
                 if doc_id in news_index:
@@ -134,7 +138,7 @@ def get_doc_input(news, news_index, category_dict, subcategory_dict, args):
     news_category = np.zeros(news_num, dtype='int32')
     news_subcategory = np.zeros(news_num, dtype='int32')
 
-    for key in tqdm(news):
+    for key in tqdm(news, bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
         title, body, category, subcategory = news[key]
         doc_index = news_index[key]
 
