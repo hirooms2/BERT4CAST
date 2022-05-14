@@ -37,7 +37,10 @@ class MindDataset(Dataset):
         return [self.news_index[i] if i in self.news_index else 0 for i in nids]
 
     def pad_to_fix_len(self, x, fix_length):
-        pad_x = x[:fix_length] + [0] * (fix_length - len(x))
+        # pad_x = x[-fix_length:] + [0] * (fix_length - len(x))
+        # for reversed positional embedding
+        pad_x = list(reversed(x[-fix_length:])) + [0] * (fix_length - len(x))
+
         mask = [1] * min(fix_length, len(x)) + [0] * max(0, fix_length - len(x))
         return pad_x, mask
 

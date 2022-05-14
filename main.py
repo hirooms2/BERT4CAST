@@ -81,7 +81,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-        # scheduler.step()
+        scheduler.step()
 
         print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)

@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('--device_id', type=int, default=0, help='Device ID of GPU')
     parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate')
     parser.add_argument('--lr_dc', type=float, default=0.5, help='learning rate decay.')
-    parser.add_argument('--lr_dc_step', type=int, default=3,
+    parser.add_argument('--lr_dc_step', type=int, default=5,
                         help='the number of steps after which the learning rate decay.')
 
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
@@ -43,7 +43,8 @@ def parse_args():
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
     parser.add_argument('--n_heads', type=int, default=1, help='Head number of multi-head self-attention')
     parser.add_argument('--n_dim', type=int, default=400, help='dimension of each head')
-    parser.add_argument('--news_dim', type=int, default=64, help='Head number of multi-head self-attention')
+    parser.add_argument('--news_dim', type=int, default=64, help='news_dim')
+    parser.add_argument('--pos_dim', type=int, default=64, help='pos_dim')
 
     parser.add_argument('--position_dim', type=int, default=300, help='Positional dimension of user encoder')
     parser.add_argument('--head_num', type=int, default=20, help='Head number of multi-head self-attention')

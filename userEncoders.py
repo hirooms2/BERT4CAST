@@ -20,8 +20,11 @@ class UserEncoder(torch.nn.Module):
 
         self.news_additive_attention = AdditiveAttention(
             args.news_dim, args.attention_dim)
+        self.pos_embedding = nn.Embedding(200, args.news_dim)
 
     def initialize(self):
+        nn.init.uniform_(self.pos_embedding.weight, -0.1, 0.1)
+
         nn.init.xavier_uniform_(self.affine1.weight, gain=nn.init.calculate_gain('relu'))
         nn.init.zeros_(self.affine1.bias)
         nn.init.xavier_uniform_(self.affine2.weight)
@@ -45,9 +48,13 @@ class UserEncoder(torch.nn.Module):
         #                              self.args.use_padded_news_embedding)
         #
         # user_log_vecs = log_vec
-
+        batch_size = log_mask.size(0)
         news_num = news_vec.size(1)
         hist_len = log_mask.size(1)
+
+        pos_emb = self.pos_embedding.weight[:hist_len]  # [hist_len, d]
+        pos_emb = pos_emb.unsqueeze(0).repeat(batch_size, 1, 1)  # [B, hist_len, d]
+        log_vec = log_vec + pos_emb
 
         log_mask = log_mask.unsqueeze(dim=1).expand(-1, news_num, -1)  # [batch_size, news_num, hist_len]
         news_vec = news_vec.unsqueeze(dim=2).expand(-1, -1, hist_len, -1)  # [batch_size, news_num, hist_len, news_dim]
