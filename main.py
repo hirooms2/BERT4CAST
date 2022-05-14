@@ -70,6 +70,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         # else:
         #     args.reg_term=0 # CTR 만 학습
         # model.train()
+        if args.eval=='yes' : model.train()
 
         total_loss, total_loss_lm = 0.0, 0.0
         for (user_features, log_mask, news_features, label) in tqdm(train_dataloader,
@@ -88,6 +89,7 @@ def train(args, model, train_dataloader, dev_dataloader):
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
         # model.eval()
+        if args.eval=='yes' : model.eval()
 
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
         hits = []
