@@ -29,7 +29,8 @@ class NewsEncoder(nn.Module):
         else:
             self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=False)
 
-        self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
+        # self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
+        self.reduce_dim_linear = nn.Linear(self.hidden_size, args.news_dim)
 
         self.bert_model = bert_model
         self.tokenizer = tokenizer
@@ -150,12 +151,12 @@ class NewsEncoder(nn.Module):
     # Output
     # news_representation : [batch_size, news_num, news_embedding_dim]
     def feature_fusion(self, news_representation, category, subCategory):
-        category_representation = self.category_embedding(category)  # [batch_size, news_num, category_embedding_dim]
-        subCategory_representation = self.subCategory_embedding(subCategory)  # [B, N, s_emb_dim]
-
-        news_representation = torch.cat(
-            [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
-            dim=2)  # [batch_size, news_num, news_embedding_dim]
+        # category_representation = self.category_embedding(category)  # [batch_size, news_num, category_embedding_dim]
+        # subCategory_representation = self.subCategory_embedding(subCategory)  # [B, N, s_emb_dim]
+        #
+        # news_representation = torch.cat(
+        #     [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
+        #     dim=2)  # [batch_size, news_num, news_embedding_dim]
 
         news_representation = self.reduce_dim_linear(news_representation)
         return news_representation
