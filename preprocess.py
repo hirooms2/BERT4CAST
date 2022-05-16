@@ -87,7 +87,8 @@ def read_news(data_path, args, tokenizer):
 
             for line in tqdm(f,bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
                 splited = line.strip('\n').split('\t')
-                doc_id, category, subcategory, title, abstract, _, title_entities, _, body, sbody = splited
+                # doc_id, category, subcategory, title, abstract, _, title_entities, _, body, sbody = splited
+                doc_id, category, subcategory, title, abstract, _, title_entities, _, body = splited
                 if doc_id in news_index:
                     continue
                 news_index[doc_id] = index
