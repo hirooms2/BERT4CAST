@@ -98,9 +98,9 @@ class DatasetTrain(MindDataset):
                 if len(history) != 0:
                     history = history.strip().split(' ')
                     user_history = list((history[-self.user_log_length:]))
-
-                    examples.append(
-                        [user_ID, user_history, click_impressions, non_click_impressions])
+                    for clicked_news in click_impressions:
+                        examples.append(
+                            [user_ID, user_history, [clicked_news], non_click_impressions])
             return examples
 
     def __getitem__(self, item):

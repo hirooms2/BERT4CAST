@@ -48,7 +48,10 @@ class NewsEncoder(nn.Module):
 
     def initialize(self):
         nn.init.uniform_(self.category_embedding.weight, -0.1, 0.1)
+        nn.init.zeros_(self.category_embedding.weight[0])
         nn.init.uniform_(self.subCategory_embedding.weight, -0.1, 0.1)
+        nn.init.zeros_(self.subCategory_embedding.weight[0])
+
         self.cast.initialize()
         self.attention.initialize()
 
