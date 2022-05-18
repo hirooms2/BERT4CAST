@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from layers import AdditiveAttention
+from layers import AdditiveAttention, MultiHeadAttention
 
 
 class UserEncoder(torch.nn.Module):
@@ -11,9 +11,10 @@ class UserEncoder(torch.nn.Module):
         self.args = args
 
         # self.news_dim = args.word_embedding_dim
-        self.news_dim = args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim
-        # self.news_dim = args.n_heads * args.n_dim
+        # self.news_dim = args.n_heads * args.n_dim + args.category_dim + args.subcategory_dim
+        self.news_dim = args.n_heads * args.n_dim
         # self.news_dim = args.news_dim
+        self.mhsa = MultiHeadAttention(self.news_dim, args.n_heads, args.n_dim)
 
         self.affine1 = nn.Linear(2 * self.news_dim, args.attention_dim)
         self.affine2 = nn.Linear(args.attention_dim, 1)
@@ -21,6 +22,12 @@ class UserEncoder(torch.nn.Module):
         self.news_additive_attention = AdditiveAttention(
             args.news_dim, args.attention_dim)
         self.gru = nn.GRU(self.news_dim, self.news_dim, batch_first=True)
+
+    def initialize(self):
+        nn.init.xavier_uniform_(self.affine1.weight, gain=nn.init.calculate_gain('relu'))
+        nn.init.zeros_(self.affine1.bias)
+        nn.init.xavier_uniform_(self.affine2.weight)
+        nn.init.zeros_(self.affine2.bias)
 
     def forward(self, log_vec, log_mask, news_vec):
         """
@@ -45,6 +52,7 @@ class UserEncoder(torch.nn.Module):
         hist_len = log_mask.size(1)
 
         # log_vec, _ = self.gru(log_vec)
+        # log_vec = self.mhsa(log_vec, log_vec, log_vec, log_mask)
 
         log_mask = log_mask.unsqueeze(dim=1).expand(-1, news_num, -1)  # [batch_size, news_num, hist_len]
         news_vec = news_vec.unsqueeze(dim=2).expand(-1, -1, hist_len, -1)  # [batch_size, news_num, hist_len, news_dim]

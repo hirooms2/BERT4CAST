@@ -1,22 +1,20 @@
+import logging
 import os
+from datetime import datetime
+
+import numpy as np
+import torch
+from pytz import timezone
 from torch import nn, optim
 from torch.utils.data import DataLoader
+from tqdm.auto import tqdm
+from transformers import AutoConfig, AutoModel, AutoTokenizer
 
-import torch
-
-from data_loader import DatasetTrain, DatasetTest
+from data_loader import DatasetTest, DatasetTrain
 from model import Model
 from parameters import parse_args
-from preprocess import read_news, get_doc_input, save_news, load_news, glove
-from transformers import AutoTokenizer, AutoModel, AutoConfig
-import numpy as np
-import logging
-from tqdm.auto import tqdm
-
+from preprocess import get_doc_input, glove, load_news, read_news, save_news
 from utils import scoring
-
-from pytz import timezone
-from datetime import datetime
 
 
 ##TODO : GIT Contributor test
@@ -41,7 +39,8 @@ def train(args, model, train_dataloader, dev_dataloader):
 
     # results
     if not os.path.exists('./results'): os.mkdir('./results')
-    results_file_path = f'./results/train_{args.device_id}_{args.name}.txt'
+    mdhm = str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M'))  # MonthDailyHourMinute .....e.g., 05091040
+    results_file_path = f"./results/train_device_{args.device_id}_{mdhm}_{args.name}.txt"
     # results_file_path = './results/train_device_%d.txt' % args.device_id
 
     # Only For Best Result
@@ -60,29 +59,42 @@ def train(args, model, train_dataloader, dev_dataloader):
     best_auc, best_epoch = 0, 0
     best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
 
+    if args.model_path != 'none':
+        model_name = args.name
+        model_path = os.path.join('./model/', args.model_path)
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'))[model_name])
+
     for ep in range(args.epoch):
+        # if ep<2:
+        #     args.reg_term=1 # LM 만 학습
+        # else:
+        #     args.reg_term=0 # CTR 만 학습
+        model.train()
+
         total_loss, total_loss_lm = 0.0, 0.0
-        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader):
-            loss, loss_lm, _ = model(user_features, log_mask, news_features, label)
+        for (user_features, log_mask, news_features, label) in tqdm(train_dataloader,
+                                                                    bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
+            loss = model(user_features, log_mask, news_features, label)
             total_loss += loss.data.float()
-            total_loss_lm += loss_lm.data.float()
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        # scheduler.step()
 
         print('Loss:\t%.4f' % total_loss)
         print('Loss_LM:\t%.4f' % total_loss_lm)
 
         # best_auc, best_epoch = 0, 0
         # best_mrr, best_ndcg5, best_ngcg10 = 0, 0, 0
+        model.eval()
 
         aucs, mrrs, ndcg5s, ndcg10s = [], [], [], []
         hits = []
         with torch.no_grad():
-            for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader):
-                scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
-                score_lm, masked_index = mlm
+            for (user_features, log_mask, news_features, label) in tqdm(dev_dataloader,
+                                                                        bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
+                scores = model(user_features, log_mask, news_features, label, compute_loss=False)
 
                 scores = scores.view(-1).cpu().numpy()
                 sub_scores = []
@@ -100,25 +112,15 @@ def train(args, model, train_dataloader, dev_dataloader):
                 ndcg5s.append(ndcg5)
                 ndcg10s.append(ndcg10)
 
-                sub_scores_lm = score_lm.topk(10)[1]
-                sub_scores_lm = sub_scores_lm.cpu().numpy()
-                title_text = news_features[0].squeeze(0).cpu().numpy()
-                masked_index = masked_index.cpu().numpy()
-
-                for (title, midx, s_score) in zip(title_text, masked_index, sub_scores_lm):
-                    target = title[midx]
-                    hits.append(np.isin(target, s_score))
-
         auc = np.mean(aucs)
         mrr = np.mean(mrrs)
         ndcg5 = np.mean(ndcg5s)
         ndcg10 = np.mean(ndcg10s)
-        hit = np.mean(hits)
+        # hit = np.mean(hits)
 
         print('Epoch %d : dev done\nDev criterions' % (ep + 1))
         print(
-            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\thit@10(LM) = {:.4f}'.format(auc, mrr, ndcg5,
-                                                                                                        ndcg10, hit))
+            'AUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}'.format(auc, mrr, ndcg5, ndcg10))
 
         # result 파일에 기록 추가
         with open(results_file_path, 'a', encoding='utf-8') as result_f:
@@ -131,13 +133,11 @@ def train(args, model, train_dataloader, dev_dataloader):
                     result_f.write('\n <Memory Usage> \n')
                     result_f.write(f'Allocated: {round(torch.cuda.memory_allocated(0) / 1024 ** 3, 1)} GB\t||\t')
                     result_f.write(f'Cached: {round(torch.cuda.memory_reserved(0) / 1024 ** 3, 1)} GB\n')
-            result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
-            # LM Loss 기록
-            result_f.write(
-                'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\tLM_Loss:\t{:.4f}\t'.format(auc, mrr,
-                                                                                                        ndcg5, ndcg10,
-                                                                                                        hit))
-
+                result_f.write(' AUC\tMRR \tnDCG@5 \tnDCG@10 \n')
+            # result_f.write('Epoch %d : dev done \t Dev criterions \t' % (ep + 1))
+            result_f.write('{:.4f}\t{:.4f}\t{:.4f}\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
+            # result_f.write(
+            #     'AUC\t{:.4f}\tMRR:\t{:.4f}\tnDCG@5\t{:.4f}\tnDCG@10\t{:.4f}\t'.format(auc, mrr, ndcg5, ndcg10))
             result_f.write(get_time_kst())
             result_f.write('\n')
 
@@ -150,7 +150,7 @@ def train(args, model, train_dataloader, dev_dataloader):
 
             print('save the model')
             # torch.save({model.name: model.state_dict()}, './model/' + model.name) # original save
-            torch.save({model.name: model.state_dict()}, './model/' + model.name + str(args.reg_term))  # for reg_term
+            torch.save({model.name: model.state_dict()}, f'./model/{mdhm}_{model.name}')  # TIME_MODELNAME 형식
 
         print('Best Epoch:\t%f\tBest auc:\t%f' % (best_epoch, best_auc))
 
@@ -165,8 +165,11 @@ def train(args, model, train_dataloader, dev_dataloader):
 
 def test(args, model, test_dataloader, tokenizer):
     print('test mode start')
-    test_model_path = './model/' + model.name + str(args.reg_term)
-    model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[model.name])
+    # test_model_path = './model/' + model.name + str(args.reg_term)
+    temp_model_name = 'BERT-CAST'
+    test_model_path = './model/BERT-CAST0'  # debug hard coding--1
+    # model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[model.name]) # debug hard coding--2
+    model.load_state_dict(torch.load(test_model_path, map_location=torch.device('cpu'))[temp_model_name])
     model.cuda(args.device_id)
 
     if not os.path.exists('./results'):
@@ -178,7 +181,8 @@ def test(args, model, test_dataloader, tokenizer):
     results_lm = []
     hit = []
     with torch.no_grad():
-        for idx, (user_features, log_mask, news_features, label) in enumerate(tqdm(test_dataloader)):
+        for idx, (user_features, log_mask, news_features, label) in enumerate(
+                tqdm(test_dataloader, bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}')):
             scores, mlm = model(user_features, log_mask, news_features, label, compute_loss=False)
             score_lm, masked_index = mlm
 
@@ -237,18 +241,18 @@ if __name__ == '__main__':
     # albert-base-v2
     # bert-base-uncased
     # roberta-base
-    # distilbert-base-uncased
-    bert_name = 'textattack/bert-base-uncased-ag-news'
+    # 'textattack/bert-base-uncased-ag-news'
+    bert_name = args.bert_name
     tokenizer = AutoTokenizer.from_pretrained(bert_name)
     word_dict = tokenizer.get_vocab()
-    bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    # bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
+    bert_config = AutoConfig.from_pretrained(bert_name)
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
-    if args.n_layer > 2:
-        modules = [bert_model.embeddings, bert_model.encoder.layer[:args.n_layer - 2]]
-        for module in modules:
-            for param in module.parameters():
-                param.requires_grad = False
+    modules = [bert_model.embeddings, bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
+    for module in modules:
+        for param in module.parameters():
+            param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
@@ -261,7 +265,7 @@ if __name__ == '__main__':
         glove(word_dict, args.word_embedding_dim, word_embedding_path)
         # glove(word_dict, args.glove_dim, word_embedding_path)
 
-    news_file = f'news_t{args.max_title_len}_b{args.max_body_len}.txt'
+    news_file = f'news_t{args.max_title_len}_b{args.max_body_len}_{args.body_type}.txt'
     if not os.path.exists(os.path.join(text_path, news_file)):
         news, news_index, category_dict, subcategory_dict = read_news(data_path, args, tokenizer)
         save_news(news_file, text_path, news, news_index, category_dict, subcategory_dict)
@@ -276,6 +280,7 @@ if __name__ == '__main__':
 
     model = Model(args, bert_model, tokenizer, word_embedding_path)
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.lr_dc_step, gamma=args.lr_dc)
 
     train_dataset = DatasetTrain(
         news_index=news_index,

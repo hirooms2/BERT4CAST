@@ -1,9 +1,9 @@
 import math
 import pickle
 
-import torch
 import torch.nn as nn
-
+import torch
+from layers import MultiHeadAttention
 from newsEncoders import NewsEncoder
 from userEncoders import UserEncoder
 
@@ -25,36 +25,37 @@ class Model(nn.Module):
         self.user_encoder = UserEncoder(args)
 
         self.criterion = nn.CrossEntropyLoss()
+        self.initialize()
+
+    def initialize(self):
+        self.news_encoder.initialize()
+        self.user_encoder.initialize()
 
     def forward(self,
                 user_features, log_mask, news_features, label,
-                compute_loss=True):
+                compute_loss=True, stage='CTR'):
         """
         Returns:
           click_probability: batch_size, 1 + K
         """
+
         # input_ids: batch, history, num_words
         news_vec = self.news_encoder(news_features)  # [batch_size, news_num, hidden_size+c]
-        score_lm, masked_index, masked_voca_id = self.news_encoder.forward_lm(news_features)
+        # score_lm, masked_index, masked_voca_id = self.news_encoder.forward_lm(news_features)
 
         # batch_size, news_dim
+        # random_mask = (torch.randn(log_mask.size()) < 0.8).cuda(self.args.device_id)
+        # random_mask[: 0] = 1
+        # if self.training:
+        #     log_mask = log_mask * random_mask
         log_vec = self.news_encoder(user_features)  # [batch_size, hist_len, hidden_size+c]
         # loss_lm2 = self.news_encoder.forward_lm(user_features)
-
         user_vector = self.user_encoder(log_vec, log_mask, news_vec)
 
-        a = news_vec / (torch.norm(news_vec, dim=2, keepdim=True) + 1e-10)
-        b = user_vector / (torch.norm(user_vector, dim=2, keepdim=True) + 1e-10)
-
-        score = 10 * (a * b).sum(dim=2)  # dot-product
+        score = (news_vec * user_vector).sum(dim=2)  # dot-product
 
         if compute_loss:
-            loss_ctr = self.criterion(score, label)
-            loss_lm = self.criterion(score_lm, masked_voca_id)
-            # loss = (1 - self.args.reg_term) * loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
-            loss = loss_ctr + self.args.reg_term * loss_lm  ## lm loss , Regularization Term
-
-            # loss = loss_ctr + args.lambda * loss_lm
-            return loss, loss_lm, score
+            loss = self.criterion(score, label)
+            return loss
         else:
-            return score, (score_lm, masked_index)
+            return score

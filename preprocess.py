@@ -16,6 +16,7 @@ pat = re.compile(r"[\w]+|[.,!?;|]")
 
 def remove_stopwords(sentence):
     words = pat.findall(sentence)
+    words = set(words)
     filtered_sentence = [w for w in words if not w.lower() in stop_words]
     filtered_sentence = ' '.join(filtered_sentence)
     return filtered_sentence
@@ -92,7 +93,11 @@ def read_news(data_path, args, tokenizer):
                                   add_special_tokens=False)
 
                 # body = remove_stopwords(body.lower()[:2000])
-                body = body.lower()
+                if args.body_type == 'body':
+                    body = body.lower()
+                else:
+                    body = sbody.lower()
+
                 body = tokenizer(body, max_length=args.max_body_len, padding='max_length', truncation=True,
                                  add_special_tokens=False)
 

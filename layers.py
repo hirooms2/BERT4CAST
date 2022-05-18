@@ -6,42 +6,62 @@ import math
 
 
 class AdditiveAttention(nn.Module):
-    ''' AttentionPooling used to weighted aggregate news vectors
-    Arg:
-        d_h: the last dimension of input
-    '''
-
-    def __init__(self, d_h, hidden_size=200):
+    def __init__(self, feature_dim: int, attention_dim: int):
         super(AdditiveAttention, self).__init__()
-        self.att_fc1 = nn.Linear(d_h, hidden_size)
-        self.att_fc2 = nn.Linear(hidden_size, 1)
+        self.affine1 = nn.Linear(in_features=feature_dim, out_features=attention_dim, bias=True)
+        self.affine2 = nn.Linear(in_features=attention_dim, out_features=1, bias=False)
 
     def initialize(self):
-        nn.init.xavier_uniform_(self.att_fc1.weight, gain=nn.init.calculate_gain('tanh'))
-        nn.init.zeros_(self.att_fc1.bias)
-        nn.init.xavier_uniform_(self.att_fc2.weight)
+        nn.init.xavier_uniform_(self.affine1.weight, gain=nn.init.calculate_gain('tanh'))
+        nn.init.zeros_(self.affine1.bias)
+        nn.init.xavier_uniform_(self.affine2.weight)
 
-    def forward(self, x, attn_mask=None):
-        """
-        Args:
-            x: batch_size, candidate_size, candidate_vector_dim
-            attn_mask: batch_size, candidate_size
-        Returns:
-            (shape) batch_size, candidate_vector_dim
-        """
-        bz = x.shape[0]
-        e = self.att_fc1(x)
-        e = nn.Tanh()(e)
-        alpha = self.att_fc2(e)
+    # Input
+    # feature : [batch_size, length, feature_dim]
+    # mask    : [batch_size, length]
+    # Output
+    # out     : [batch_size, feature_dim]
+    def forward(self, feature, mask=None):
+        attention = torch.tanh(self.affine1(feature))  # [batch_size, length, attention_dim]
+        a = self.affine2(attention).squeeze(dim=2)  # [batch_size, length]
+        if mask is not None:
+            alpha = F.softmax(a.masked_fill(mask == 0, -1e9), dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        else:
+            alpha = F.softmax(a, dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        out = torch.bmm(alpha, feature).squeeze(dim=1)  # [batch_size, feature_dim]
+        return out
 
-        alpha = torch.exp(alpha)
-        if attn_mask is not None:
-            alpha = alpha * attn_mask.unsqueeze(2)
-        alpha = alpha / (torch.sum(alpha, dim=1, keepdim=True) + 1e-8)
 
-        x = torch.bmm(x.permute(0, 2, 1), alpha)
-        x = torch.reshape(x, (bz, -1))  # (bz, 400)
-        return x
+class BahdanauAttention(nn.Module):
+    def __init__(self, feature_dim: int, query_dim: int, attention_dim: int):
+        super(BahdanauAttention, self).__init__()
+        self.affine11 = nn.Linear(in_features=feature_dim, out_features=attention_dim, bias=True)
+        self.affine12 = nn.Linear(in_features=query_dim, out_features=attention_dim, bias=True)
+        self.affine2 = nn.Linear(in_features=attention_dim, out_features=1, bias=False)
+
+    def initialize(self):
+        nn.init.xavier_uniform_(self.affine11.weight)
+        nn.init.zeros_(self.affine11.bias)
+        nn.init.xavier_uniform_(self.affine12.weight)
+        nn.init.zeros_(self.affine12.bias)
+        nn.init.xavier_uniform_(self.affine2.weight)
+
+    # Input
+    # feature : [batch_size, length, feature_dim]
+    # query : [batch_size, feature_dim]
+    # mask    : [batch_size, length]
+    # Output
+    # out     : [batch_size, feature_dim]
+    def forward(self, feature, query, mask=None):
+        attention = torch.tanh(
+            self.affine11(feature) + self.affine12(query).unsqueeze(1))  # [batch_size, length, attention_dim]
+        a = self.affine2(attention).squeeze(dim=2)  # [batch_size, length]
+        if mask is not None:
+            alpha = F.softmax(a.masked_fill(mask == 0, -1e9), dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        else:
+            alpha = F.softmax(a, dim=1).unsqueeze(dim=1)  # [batch_size, 1, length]
+        out = torch.bmm(alpha, feature).squeeze(dim=1)  # [batch_size, feature_dim]
+        return out
 
 
 class ScaledDotProductAttention(nn.Module):
@@ -124,12 +144,13 @@ class Context_Aware_Att(nn.Module):
 
         self.attention_scalar = math.sqrt(float(self.d_k))
 
-        self.W_Q = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
-        self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
-        self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size, bias=True)
+        self.W_Q = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        self.W_K = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        self.W_V = nn.Linear(in_features=d_model, out_features=self.hidden_size)
+        # self.W_P = nn.Linear(in_features=self.hidden_size, out_features=1)
 
-        # self.F1 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
-        # self.F2 = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
+        # self.F1 = nn.Linear(self.hidden_size, 1024, bias=True)
+        # self.F2 = nn.Linear(1024, self.hidden_size, bias=True)
         # self.layernorm = nn.LayerNorm(self.hidden_size)
 
     def initialize(self):
@@ -153,74 +174,87 @@ class Context_Aware_Att(nn.Module):
         title_len = Q_seq.size(1)
         body_len = Q_seq.size(2)
 
-        K_seq = torch.cat([K_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d] Body, Title
-        V_seq = torch.cat([V_seq, Q_seq], 1)  # [B, M, d] -> [B, N+M, d]
+        K_seq = torch.cat([Q_seq, K_seq], 1)  # [B, M, d] -> [B, N+M, d] Body, Title
+        V_seq = torch.cat([Q_seq, V_seq], 1)  # [B, M, d] -> [B, N+M, d]
 
         # mask = torch.cat([body_mask, title_mask], dim=1)  # [B, N+M]
         mask = title_mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [bz, N, N]
-        mask = torch.cat([body_mask, mask], dim=2)
-        mask = mask * title_mask.unsqueeze(-1)
-
+        body_mask = body_mask.unsqueeze(1).repeat(1, self.len_q, 1)  # [B, N, M]
+        mask = torch.cat([mask, body_mask], dim=2)  # [B, N, N+M]
+        mask = mask * title_mask.unsqueeze(-1)  # [B, N, N+M]
         mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
 
-        Q_seq = self.W_Q(Q_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N, nd]
-        K_seq = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
-        V_seq = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
+        Q = self.W_Q(Q_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N, nd]
+        K = self.W_K(K_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
+        # V = self.W_V(V_seq).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
+        V = V_seq.view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # [B, nh, N+M, nd]
 
-        # [B, nh, N, nd] x [B, nh, nd, M] = [B, nh, N, M]
-        hidden, attn = ScaledDotProductAttention(self.d_k)(
-            Q_seq, K_seq, V_seq, mask)  # [bz, 20, seq_len, 20]
+        logits = torch.matmul(Q, K.transpose(-1, -2)) / np.sqrt(self.d_k)  # [B, nh, N, N+M]
+
+        # logits = torch.matmul(Q, K.transpose(-1, -2)) / 1.0  # [B, nh, N, N+M]
+        attention = F.softmax(logits.masked_fill(mask == 0, -1e9), dim=3)  # [B, nh, N, N+M]
+
+        # hidden = torch.matmul(attn, V)  # [B, nh, N, nd]
+        # hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
+        # hidden = Q_seq + hidden
+
+        hidden = torch.matmul(attention, V)  # [B, nh, N, nd]
         hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
-
+        # # # Drop-out -> Add & norm
+        # new_hidden = F.dropout(new_hidden, p=0.1, training=self.training)
+        # hidden = self.layernorm(Q_seq + new_hidden)
+        #
         # # Point-wise Feed-forward
         # new_hidden = self.F2(torch.nn.GELU()(self.F1(hidden)))
-        # new_hidden = F.dropout(new_hidden, p=0.2, training=self.training)
+        # new_hidden = F.dropout(new_hidden, p=0.1, training=self.training)
         # hidden = self.layernorm(hidden + new_hidden)
 
         return hidden
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, n_heads, d_k, d_v, enable_gpu=True):
+    def __init__(self, d_model, n_heads, n_dim):
         super(MultiHeadAttention, self).__init__()
         self.d_model = d_model  # 300
         self.n_heads = n_heads  # 20
-        self.d_k = d_k  # 20
-        self.d_v = d_v  # 20
-        self.enable_gpu = enable_gpu
+        self.d_k = n_dim  # 20
+        self.d_v = n_dim  # 20
 
-        self.W_Q = nn.Linear(d_model, d_k * n_heads)  # 300, 400
-        self.W_K = nn.Linear(d_model, d_k * n_heads)  # 300, 400
-        self.W_V = nn.Linear(d_model, d_v * n_heads)  # 300, 400
+        self.W_Q = nn.Linear(d_model, n_dim * n_heads)  # 300, 400
+        self.W_K = nn.Linear(d_model, n_dim * n_heads)  # 300, 400
+        self.W_V = nn.Linear(d_model, n_dim * n_heads)  # 300, 400
 
         self._initialize_weights()
 
     def _initialize_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.xavier_uniform_(m.weight, gain=1)
+        nn.init.xavier_uniform_(self.W_Q.weight)
+        nn.init.zeros_(self.W_Q.bias)
+        nn.init.xavier_uniform_(self.W_K.weight)
+        nn.init.zeros_(self.W_K.bias)
+        nn.init.xavier_uniform_(self.W_V.weight)
+        nn.init.zeros_(self.W_V.bias)
 
     def forward(self, Q, K, V, mask=None):
         #       Q, K, V: [bz, seq_len, 300] -> W -> [bz, seq_len, 400]-> q_s: [bz, 20, seq_len, 20]
         batch_size, seq_len, _ = Q.shape
 
-        q_s = self.W_Q(Q).view(batch_size, -1, self.n_heads,
-                               self.d_k).transpose(1, 2)
-        k_s = self.W_K(K).view(batch_size, -1, self.n_heads,
-                               self.d_k).transpose(1, 2)
-        v_s = self.W_V(V).view(batch_size, -1, self.n_heads,
-                               self.d_v).transpose(1, 2)
+        Q = self.W_Q(Q).view(batch_size, -1, self.n_heads,
+                             self.d_k).transpose(1, 2)
+        K = self.W_K(K).view(batch_size, -1, self.n_heads,
+                             self.d_k).transpose(1, 2)
+        V = self.W_V(V).view(batch_size, -1, self.n_heads,
+                             self.d_v).transpose(1, 2)
 
         if mask is not None:
             mask = mask.unsqueeze(1).expand(batch_size, seq_len, seq_len)  # [bz, seq_len, seq_len]
             mask = mask.unsqueeze(1).repeat(1, self.n_heads, 1, 1)  # attn_mask : [bz, 20, seq_len, seq_len]
 
-        context, attn = ScaledDotProductAttention(self.d_k)(
-            q_s, k_s, v_s, mask)  # [bz, 20, seq_len, 20]
-        context = context.transpose(1, 2).contiguous().view(
-            batch_size, -1, self.n_heads * self.d_v)  # [bz, seq_len, 400]
-        #         output = self.fc(context)
-        return context  # self.layer_norm(output + residual)
+        logits = torch.matmul(Q, K.transpose(-1, -2)) / np.sqrt(self.d_k)  # [B, nh, N, N+M]
+        attention = F.softmax(logits.masked_fill(mask == 0, -1e9), dim=3)  # [B, nh, N, N+M]
+        hidden = torch.matmul(attention, V)  # [B, nh, N, nd]
+        hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
+
+        return hidden  # self.layer_norm(output + residual)
 
 
 class WeightedLinear(torch.nn.Module):

@@ -37,7 +37,7 @@ class MindDataset(Dataset):
         return [self.news_index[i] if i in self.news_index else 0 for i in nids]
 
     def pad_to_fix_len(self, x, fix_length):
-        pad_x = x[:fix_length] + [0] * (fix_length - len(x))
+        pad_x = list(reversed(x[-fix_length:])) + [0] * (fix_length - len(x))
         mask = [1] * min(fix_length, len(x)) + [0] * max(0, fix_length - len(x))
         return pad_x, mask
 
@@ -96,13 +96,13 @@ class DatasetTrain(MindDataset):
                     history = history.strip().split(' ')
                     user_history = list((history[-self.user_log_length:]))
 
-                    examples.append(
-                        [user_ID, user_history, click_impressions, non_click_impressions])
+                    for clicked_news in click_impressions:
+                        examples.append(
+                            [user_ID, user_history, [clicked_news], non_click_impressions])
             return examples
 
     def __getitem__(self, item):
 
-        label = 0
         user_idx, user_history, click_impressions, non_click_impressions = self.behaviors[item]
 
         click_docs, log_mask = self.pad_to_fix_len(self.trans_to_nindex(user_history),
