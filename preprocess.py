@@ -77,12 +77,12 @@ def read_news(data_path, args, tokenizer):
     test_path = os.path.join(data_path, 'test')
 
     for i, path in enumerate([train_path, dev_path, test_path]):
-        text_path = os.path.join(path, 'news_with_summarized.tsv')
+        text_path = os.path.join(path, 'news_with_body.tsv')
         with open(text_path, 'r', encoding='utf-8') as f:
 
             for line in tqdm(f):
                 splited = line.strip('\n').split('\t')
-                doc_id, category, subcategory, title, abstract, _, title_entities, _, body, sbody = splited
+                doc_id, category, subcategory, title, abstract, _, title_entities, _, body = splited
                 if doc_id in news_index:
                     continue
                 news_index[doc_id] = index
