@@ -58,8 +58,8 @@ def parse_args():
     parser.add_argument('--cnn_window_size', type=int, default=3, help='Window size of CNN kernel')
 
     parser.add_argument('--use_category', action='store_false')
-    parser.add_argument('--category_dim', type=int, default=200, help='Category embedding dimension')
-    parser.add_argument('--subcategory_dim', type=int, default=200, help='SubCategory embedding dimension')
+    parser.add_argument('--category_dim', type=int, default=50, help='Category embedding dimension')
+    parser.add_argument('--subcategory_dim', type=int, default=50, help='SubCategory embedding dimension')
     parser.add_argument('--category_num', type=int, default=50, help='Category embedding num')
     parser.add_argument('--subcategory_num', type=int, default=50, help='SubCategory embedding num')
 

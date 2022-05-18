@@ -50,7 +50,7 @@ class Model(nn.Module):
         #     log_mask = log_mask * random_mask
         log_vec = self.news_encoder(user_features)  # [batch_size, hist_len, hidden_size+c]
         # loss_lm2 = self.news_encoder.forward_lm(user_features)
-        user_vector = self.user_encoder(log_vec, log_mask, news_vec)
+        user_vector, news_vec = self.user_encoder(log_vec, log_mask, news_vec)
 
         score = (news_vec * user_vector).sum(dim=2)  # dot-product
 

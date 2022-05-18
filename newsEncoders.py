@@ -32,9 +32,9 @@ class NewsEncoder(nn.Module):
         self.tokenizer = tokenizer
         self.word_embedding_path = word_embedding_path
 
-        # self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
-        self.attention = BahdanauAttention(self.hidden_size, args.category_dim + args.subcategory_dim,
-                                           args.attention_dim)
+        self.attention = AdditiveAttention(args.n_heads * args.n_dim, args.attention_dim)
+        # self.attention = BahdanauAttention(self.hidden_size, args.category_dim + args.subcategory_dim,
+        #                                    args.attention_dim)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len,
@@ -94,21 +94,21 @@ class NewsEncoder(nn.Module):
         title_emb = self.dropout(self.linear_word(title_emb))  # [B * L, N, d]
         body_emb = self.dropout(self.linear_word(body_emb))  # [B * L, M, d]
 
-        category_representation = self.dropout(
-            self.category_embedding(category))  # [batch_size, news_num, category_embedding_dim]
-        subcategory_representation = self.dropout(self.subCategory_embedding(sub_category))  # [B, N, s_emb_dim]
-        query = torch.cat([category_representation, subcategory_representation], dim=2).view(batch_size * news_num, -1)
+        # category_representation = self.dropout(
+        #     self.category_embedding(category))  # [batch_size, news_num, category_embedding_dim]
+        # subcategory_representation = self.dropout(self.subCategory_embedding(sub_category))  # [B, N, s_emb_dim]
+        # query = torch.cat([category_representation, subcategory_representation], dim=2).view(batch_size * news_num, -1)
         # title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
         # body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
         # c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
 
-        title_rep = self.attention(c, query, title_mask).view(batch_size, news_num,
-                                                              -1)  # [batch_size, news_num, hidden_size]
-        # news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
+        title_rep = self.attention(c, title_mask).view(batch_size, news_num, -1)  # [B, L, d]
+        # title_rep = self.attention(c, query, title_mask).view(batch_size, news_num, -1)  # [B, L, d]
+        news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
 
-        return title_rep
+        return news_rep
 
     # def forward_lm(self, news_features):
     #     title_text = news_features[0]
