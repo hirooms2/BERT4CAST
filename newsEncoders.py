@@ -46,9 +46,8 @@ class NewsEncoder(nn.Module):
         self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len, args.max_body_len)
         # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.glove_dim, args.max_title_len, args.max_body_len)
         # self.transformer = nn.Transformer(nhead=20, num_encoder_layers=1, d_model=400, dim_feedforward=1024)
-
-        self.transformer = TransformerEncoder(TransformerEncoderLayer(d_model=400, nhead=20, dim_feedforward=1024),
-                                              num_layers=1)
+        # self.transformer = TransformerEncoder(TransformerEncoderLayer(d_model=400, nhead=20, dim_feedforward=1024),
+        #                                       num_layers=1)
 
         with open(self.word_embedding_path, 'rb') as word_embedding_f:
             self.glove_embedding.weight.data.copy_(pickle.load(word_embedding_f))
@@ -91,18 +90,21 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
-        body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
+        all_text = torch.cat([title_text, body_text], dim=1)
+        all_mask = torch.cat([title_mask, body_mask], dim=1)
+
+        # title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
+        # body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
+        all_emb = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
+        all_emb = self.linear_word(all_emb)
         # title_glove = self.glove_embedding(title_text)
         # body_glove = self.glove_embedding(body_text)
         # title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
         # body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
-        title_emb = self.linear_word(title_bert)
-        body_emb = self.linear_word(body_bert)
-        all_emb = torch.cat([title_emb, body_emb], dim=1)
-        all_mask = torch.cat([title_mask, body_mask], dim=1)
-        c = self.transformer(all_emb)
+        # title_emb = self.linear_word(title_bert)
+        # body_emb = self.linear_word(body_bert)
+        # c = self.transformer(all_emb)
 
         # title_emb = torch.cat([title_bert * self.scalar, title_glove], dim=2)
         # body_emb = torch.cat([body_bert * self.scalar, body_glove], dim=2)
@@ -110,8 +112,8 @@ class NewsEncoder(nn.Module):
         # c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
 
-        title_rep = self.attention(c, all_mask).view(batch_size, news_num, -1)  # [batch_size, news_num, hidden_size]
-        news_rep = self.feature_fusion(title_rep, category, sub_category)  # [B, news_num, d+a]
+        news_rep = self.attention(all_emb, all_mask).view(batch_size, news_num, -1)  # [B, L, d]
+        news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
 
         return news_rep
 
