@@ -37,12 +37,12 @@ class NewsEncoder(nn.Module):
         #                                    args.attention_dim)
 
         self.dropout = nn.Dropout(p=args.dropout_rate)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len,
+        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.glove_dim, args.max_title_len,
                                       args.max_body_len)
         # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.glove_dim,
         #                               args.max_title_len, args.max_body_len)
-        self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len,
-                                      args.max_body_len)
+        # self.cast = Context_Aware_Att(args.n_heads, args.n_dim, args.hidden_size, args.max_title_len,
+        #                               args.max_body_len)
         # self.mhsa = MultiHeadAttention(args.hidden_size, args.n_heads, args.n_dim)
 
         with open(self.word_embedding_path, 'rb') as word_embedding_f:
@@ -91,8 +91,8 @@ class NewsEncoder(nn.Module):
         title_emb = self.dropout(self.glove_embedding(title_text))
         body_emb = self.dropout(self.glove_embedding(body_text))
 
-        title_emb = self.dropout(self.linear_word(title_emb))  # [B * L, N, d]
-        body_emb = self.dropout(self.linear_word(body_emb))  # [B * L, M, d]
+        # title_emb = self.dropout(self.linear_word(title_emb))  # [B * L, N, d]
+        # body_emb = self.dropout(self.linear_word(body_emb))  # [B * L, M, d]
 
         # category_representation = self.dropout(
         #     self.category_embedding(category))  # [batch_size, news_num, category_embedding_dim]
