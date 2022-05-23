@@ -18,6 +18,7 @@ class NewsEncoder(nn.Module):
         self.word_embedding_dim = args.word_embedding_dim
         self.glove_embedding = nn.Embedding(num_embeddings=args.vocab_size, embedding_dim=args.glove_dim)
         self.hidden_size = args.n_heads * args.n_dim
+        self.t_layer = args.t_layer
 
         self.category_embedding = nn.Embedding(num_embeddings=args.category_num, embedding_dim=args.category_dim,
                                                padding_idx=0)
@@ -116,9 +117,7 @@ class NewsEncoder(nn.Module):
 
         # c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
-        title_emb = self.multihead_attention(title_bert, title_bert, title_bert, title_mask)
-        title_emb = self.dropout(title_emb)
-
+        title_emb = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
         news_rep = self.attention(title_emb, title_text).view(batch_size, news_num, -1)  # [B, L, d]
         # news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
         news_rep = self.reduce_dim_linear(news_rep)
