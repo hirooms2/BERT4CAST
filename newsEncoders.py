@@ -32,7 +32,8 @@ class NewsEncoder(nn.Module):
         else:
             self.scalar = torch.nn.Parameter(torch.ones(1), requires_grad=False)
 
-        self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
+        # self.reduce_dim_linear = nn.Linear(self.hidden_size + args.category_dim + args.subcategory_dim, args.news_dim)
+        self.reduce_dim_linear = nn.Linear(self.hidden_size, args.news_dim)
         # self.reduce_dim_linear = nn.Linear(self.hidden_size, args.news_dim)
 
         self.bert_model = bert_model
@@ -48,6 +49,7 @@ class NewsEncoder(nn.Module):
         # self.transformer = nn.Transformer(nhead=20, num_encoder_layers=1, d_model=400, dim_feedforward=1024)
         # self.transformer = TransformerEncoder(TransformerEncoderLayer(d_model=400, nhead=20, dim_feedforward=1024),
         #                                       num_layers=1)
+        self.multihead_attention = MultiHeadAttention(self.word_embedding_dim, args.n_heads, args.n_dim)
 
         with open(self.word_embedding_path, 'rb') as word_embedding_f:
             self.glove_embedding.weight.data.copy_(pickle.load(word_embedding_f))
@@ -90,15 +92,18 @@ class NewsEncoder(nn.Module):
         title_text = title_text.view([batch_size * news_num, self.max_title_len])  # [B * L, N]
         body_text = body_text.view([batch_size * news_num, self.max_body_len])  # [B * L, M]
 
-        all_text = torch.cat([title_text, body_text], dim=1)
-        all_mask = torch.cat([title_mask, body_mask], dim=1)
+        # all_text = torch.cat([title_text, body_text], dim=1)
+        # all_mask = torch.cat([title_mask, body_mask], dim=1)
 
-        # title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
+        title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
         # body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
-        all_emb = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
-        all_emb = self.linear_word(all_emb)
+
+        # all_emb = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
+        # all_emb = self.linear_word(all_emb)
+
         # title_glove = self.glove_embedding(title_text)
         # body_glove = self.glove_embedding(body_text)
+
         # title_emb = self.linear_word(torch.cat([title_bert, title_glove], dim=2))
         # body_emb = self.linear_word(torch.cat([body_bert, body_glove], dim=2))
 
@@ -111,9 +116,12 @@ class NewsEncoder(nn.Module):
 
         # c = self.dropout(self.cast(title_emb, body_emb, body_emb, title_mask, body_mask))  # [B * L, N, d]
         # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
+        title_emb = self.multihead_attention(title_bert, title_bert, title_bert, title_mask)
+        title_emb = self.dropout(title_emb)
 
-        news_rep = self.attention(all_emb, all_mask).view(batch_size, news_num, -1)  # [B, L, d]
-        news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
+        news_rep = self.attention(title_emb, title_text).view(batch_size, news_num, -1)  # [B, L, d]
+        # news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
+        news_rep = self.reduce_dim_linear(news_rep)
 
         return news_rep
 
@@ -169,12 +177,12 @@ class NewsEncoder(nn.Module):
     # Output
     # news_representation : [batch_size, news_num, news_embedding_dim]
     def feature_fusion(self, news_representation, category, subCategory):
-        category_representation = self.category_embedding(category)  # [batch_size, news_num, category_embedding_dim]
-        subCategory_representation = self.subCategory_embedding(subCategory)  # [B, N, s_emb_dim]
-
-        news_representation = torch.cat(
-            [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
-            dim=2)  # [batch_size, news_num, news_embedding_dim]
+        # category_representation = self.category_embedding(category)  # [batch_size, news_num, category_embedding_dim]
+        # subCategory_representation = self.subCategory_embedding(subCategory)  # [B, N, s_emb_dim]
+        #
+        # news_representation = torch.cat(
+        #     [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
+        #     dim=2)  # [batch_size, news_num, news_embedding_dim]
 
         news_representation = self.reduce_dim_linear(news_representation)
         return news_representation

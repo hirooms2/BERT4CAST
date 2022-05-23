@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--body_type', type=str, default='body')
     parser.add_argument('--scaling', type=str, default='yes')
     parser.add_argument('--model_path', type=str, default='none')
-    parser.add_argument('--eval', type=str, default='yes') # train(), eval() 체크 parameter추가
+    parser.add_argument('--eval', type=str, default='yes')  # train(), eval() 체크 parameter추가
 
     parser.add_argument('--n_layer', type=int, default=0)
     parser.add_argument('--max_hist_len', type=int, default=50)
@@ -41,8 +41,8 @@ def parse_args():
     parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ')  # reg_term
 
     parser.add_argument('--hidden_size', type=int, default=400, help='Transformation dimension of user encoder')
-    parser.add_argument('--n_heads', type=int, default=1, help='Head number of multi-head self-attention')
-    parser.add_argument('--n_dim', type=int, default=400, help='dimension of each head')
+    parser.add_argument('--n_heads', type=int, default=15, help='Head number of multi-head self-attention')
+    parser.add_argument('--n_dim', type=int, default=20, help='dimension of each head')
     parser.add_argument('--news_dim', type=int, default=64, help='news_dim')
     parser.add_argument('--pos_dim', type=int, default=64, help='pos_dim')
 

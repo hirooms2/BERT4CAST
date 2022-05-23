@@ -178,17 +178,17 @@ class Context_Aware_Att(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, d_model, n_heads, d_k, d_v, enable_gpu=True):
+    def __init__(self, d_model, n_heads, d_k, enable_gpu=True):
         super(MultiHeadAttention, self).__init__()
         self.d_model = d_model  # 300
         self.n_heads = n_heads  # 20
         self.d_k = d_k  # 20
-        self.d_v = d_v  # 20
+        self.d_v = d_k  # 20
         self.enable_gpu = enable_gpu
 
         self.W_Q = nn.Linear(d_model, d_k * n_heads)  # 300, 400
         self.W_K = nn.Linear(d_model, d_k * n_heads)  # 300, 400
-        self.W_V = nn.Linear(d_model, d_v * n_heads)  # 300, 400
+        self.W_V = nn.Linear(d_model, d_k * n_heads)  # 300, 400
 
         self._initialize_weights()
 
@@ -214,10 +214,13 @@ class MultiHeadAttention(nn.Module):
 
         context, attn = ScaledDotProductAttention(self.d_k)(
             q_s, k_s, v_s, mask)  # [bz, 20, seq_len, 20]
-        context = context.transpose(1, 2).contiguous().view(
-            batch_size, -1, self.n_heads * self.d_v)  # [bz, seq_len, 400]
-        #         output = self.fc(context)
-        return context  # self.layer_norm(output + residual)
+
+        logits = torch.matmul(q_s, k_s.transpose(-1, -2)) / np.sqrt(self.d_k)  # [B, nh, N, N+M]
+        attention = F.softmax(logits.masked_fill(mask == 0, -1e9), dim=3)  # [B, nh, N, N+M]
+
+        hidden = torch.matmul(attention, v_s)  # [B, nh, N, nd]
+        hidden = hidden.transpose(1, 2).contiguous().view(batch_size, -1, self.n_heads * self.d_k)  # [bz, seq_len, 400]
+        return hidden  # self.layer_norm(output + residual)
 
 
 class WeightedLinear(torch.nn.Module):
