@@ -252,10 +252,15 @@ if __name__ == '__main__':
     bert_config.num_hidden_layers = args.t_layer
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
-    modules = [bert_model.embeddings, bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
-    for module in modules:
-        for param in module.parameters():
-            param.requires_grad = False
+    args.hidden_size = bert_config.hidden_size
+    args.word_embedding_dim = bert_config.hidden_size
+
+    if args.bert_name != 'prajjwal1/bert-small':
+        modules = [bert_model.embeddings,
+                   bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
+        for module in modules:
+            for param in module.parameters():
+                param.requires_grad = False
 
     data_path = os.path.join('./datasets/', args.dataset)
     text_path = os.path.join(data_path, 'text')
