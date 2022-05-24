@@ -116,9 +116,10 @@ class NewsEncoder(nn.Module):
         # title_emb = torch.cat([title_bert * self.scalar, title_glove], dim=2)
         # body_emb = torch.cat([body_bert * self.scalar, body_glove], dim=2)
 
-        c = self.dropout(self.cast(title_bert, body_bert, body_bert, title_mask, body_mask))  # [B * L, N, d]
-        # c = self.cast(title_emb, body_emb, body_emb, title_mask, body_mask)  # [B * L, N, d]
-        # title_emb = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
+        if self.args.attn_type == 'TB':
+            c = self.dropout(self.cast(title_bert, body_bert, body_bert, title_mask, body_mask))  # [B * L, N, d]
+        else:
+            c = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
 
         news_rep = self.attention(c, title_text).view(batch_size, news_num, -1)  # [B, L, d]
         # news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
