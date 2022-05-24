@@ -249,7 +249,8 @@ if __name__ == '__main__':
     word_dict = tokenizer.get_vocab()
     # bert_config = AutoConfig.from_pretrained(bert_name, output_hidden_states=True)
     bert_config = AutoConfig.from_pretrained(bert_name)
-    bert_config.num_hidden_layers = args.t_layer
+    if args.bert_name != 'prajjwal1/bert-small':
+        bert_config.num_hidden_layers = args.t_layer
     bert_model = AutoModel.from_pretrained(bert_name, config=bert_config)
 
     args.hidden_size = bert_config.hidden_size
