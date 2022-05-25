@@ -186,7 +186,7 @@ class NewsEncoder(nn.Module):
             [news_representation, self.dropout(category_representation), self.dropout(subCategory_representation)],
             dim=2)  # [batch_size, news_num, news_embedding_dim]
 
-        # news_representation = self.reduce_dim_linear(news_representation)
+        news_representation = self.reduce_dim_linear(news_representation)
         return news_representation
 
     def mask_tokens(self, title_text: torch.Tensor, title_mask: torch.Tensor, mlm_probability=0.15):
