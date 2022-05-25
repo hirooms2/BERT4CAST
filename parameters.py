@@ -8,8 +8,8 @@ def parse_args():
     parser.add_argument('--mode', type=str, default='train')
     parser.add_argument('--name', type=str, default='BERT-CAST')
     parser.add_argument('--attn_type', type=str, default='TB')
-    parser.add_argument('--bert_name', type=str, default='prajjwal1/bert-tiny',
-                        choices=['bert-base-uncased', 'albert-base-v2', 'prajjwal1/bert-small'])
+    parser.add_argument('--bert_name', type=str, default='prajjwal1/bert-mini',
+                        choices=['bert-base-uncased', 'albert-base-v2', 'prajjwal1/bert-small', 'prajjwal1/bert-mini'])
     parser.add_argument('--dataset', type=str, default='MIND/small')
 
     parser.add_argument('--read_text', action='store_false')
