@@ -19,6 +19,8 @@ def parse_args():
     parser.add_argument('--scaling', type=str, default='yes')
     parser.add_argument('--model_path', type=str, default='none')
     parser.add_argument('--eval', type=str, default='yes')  # train(), eval() 체크 parameter추가
+    
+    parser.add_argument('--bert_train_embedding', type=str, default='false')  # bert embedding train여부
 
     parser.add_argument('--n_layer', type=int, default=2)
     parser.add_argument('--t_layer', type=int, default=8)

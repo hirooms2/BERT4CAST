@@ -98,7 +98,6 @@ class NewsEncoder(nn.Module):
         # all_mask = torch.cat([title_mask, body_mask], dim=1)
 
         title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
-        body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
 
         # all_emb = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
         # all_emb = self.linear_word(all_emb)
@@ -117,6 +116,7 @@ class NewsEncoder(nn.Module):
         # body_emb = torch.cat([body_bert * self.scalar, body_glove], dim=2)
 
         if self.args.attn_type == 'TB':
+            body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
             c = self.dropout(self.cast(title_bert, body_bert, body_bert, title_mask, body_mask))  # [B * L, N, d]
         else:
             c = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))

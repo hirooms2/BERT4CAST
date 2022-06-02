@@ -257,8 +257,11 @@ if __name__ == '__main__':
     args.word_embedding_dim = bert_config.hidden_size
 
     # if 'prajjwal1' not in args.bert_name:
-    modules = [bert_model.embeddings,
-               bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
+        
+    modules = [bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
+    if args.bert_train_embedding == 'false':
+        modules.append(bert_model.embeddings)
+    
     for module in modules:
         for param in module.parameters():
             param.requires_grad = False
