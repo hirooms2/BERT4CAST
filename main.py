@@ -1,7 +1,7 @@
 import logging
 import os
 from datetime import datetime
-
+import sys
 import numpy as np
 import torch
 from pytz import timezone
@@ -52,6 +52,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             '\n=================================================\n==================== train =====================\n')
         result_f.write(get_time_kst())
         result_f.write('\n')
+        result_f.write('Argument List:'+ str(sys.argv)+'\n')
         for i, v in vars(args).items():
             result_f.write(f'{i}:{v} || ')
         result_f.write('\n')
