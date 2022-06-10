@@ -97,8 +97,6 @@ class NewsEncoder(nn.Module):
         # all_text = torch.cat([title_text, body_text], dim=1)
         # all_mask = torch.cat([title_mask, body_mask], dim=1)
 
-        title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
-
         # all_emb = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
         # all_emb = self.linear_word(all_emb)
 
@@ -116,9 +114,17 @@ class NewsEncoder(nn.Module):
         # body_emb = torch.cat([body_bert * self.scalar, body_glove], dim=2)
 
         if self.args.attn_type == 'TB':
+            title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
             body_bert = self.bert_model(input_ids=body_text, attention_mask=body_mask).last_hidden_state
             c = self.dropout(self.cast(title_bert, body_bert, body_bert, title_mask, body_mask))  # [B * L, N, d]
-        else:
+        elif self.args.attn_type == 'T':
+            title_bert = self.bert_model(input_ids=title_text, attention_mask=title_mask).last_hidden_state
+            c = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
+        elif self.args.attn_type == 'TB_BERT':
+            all_text = torch.cat([title_text, body_text], dim=1)
+            all_mask = torch.cat([title_mask, body_mask], dim=1)
+            all_bert = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
+            title_bert = all_bert[:, :title_mask.shape[1], :]
             c = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
 
         news_rep = self.attention(c, title_text).view(batch_size, news_num, -1)  # [B, L, d]
