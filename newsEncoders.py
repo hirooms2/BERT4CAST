@@ -125,7 +125,8 @@ class NewsEncoder(nn.Module):
             all_mask = torch.cat([title_mask, body_mask], dim=1)
             all_bert = self.bert_model(input_ids=all_text, attention_mask=all_mask).last_hidden_state
             title_bert = all_bert[:, :title_mask.shape[1], :]
-            c = self.dropout(self.multihead_attention(title_bert, title_bert, title_bert, title_mask))
+            body_bert = all_bert[:, title_mask.shape[1]:, :]
+            c = self.dropout(self.cast(title_bert, body_bert, body_bert, title_mask, body_mask))  # [B * L, N, d]
 
         news_rep = self.attention(c, title_text).view(batch_size, news_num, -1)  # [B, L, d]
         news_rep = self.feature_fusion(news_rep, category, sub_category)  # [B, news_num, d+a]
