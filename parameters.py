@@ -7,8 +7,8 @@ def parse_args():
 
     parser.add_argument('--mode', type=str, default='train')
     parser.add_argument('--name', type=str, default='BERT-CAST')
-    parser.add_argument('--attn_type', type=str, default='TB')
-    parser.add_argument('--bert_name', type=str, default='prajjwal1/bert-tiny',
+    parser.add_argument('--attn_type', type=str, default='T')
+    parser.add_argument('--bert_name', type=str, default='bert-base-uncased',
                         choices=['bert-base-uncased', 'albert-base-v2', 'prajjwal1/bert-small', 'prajjwal1/bert-mini'])
     parser.add_argument('--dataset', type=str, default='MIND/small')
 
@@ -23,10 +23,10 @@ def parse_args():
     parser.add_argument('--bert_train_embedding', type=str, default='false')  # bert embedding train여부
 
     parser.add_argument('--n_layer', type=int, default=2)
-    parser.add_argument('--t_layer', type=int, default=8)
+    parser.add_argument('--t_layer', type=int, default=4)
     parser.add_argument('--max_hist_len', type=int, default=50)
     parser.add_argument('--max_title_len', type=int, default=30)
-    parser.add_argument('--max_body_len', type=int, default=80)
+    parser.add_argument('--max_body_len', type=int, default=50)
     parser.add_argument('--max_abstract_len', type=int, default=80)
     parser.add_argument('--vocab_size', type=int, default=30522)
 
@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--weight_decay', type=float, default=0, help='Optimizer weight decay')
 
     parser.add_argument('--epoch', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=3)
+    parser.add_argument('--batch_size', type=int, default=32)
 
     parser.add_argument('--reg_term', type=float, default=0, help='Regularization Term (Lambda) ')  # reg_term
 

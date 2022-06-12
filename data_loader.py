@@ -183,3 +183,41 @@ class DatasetTest(MindDataset):
         label = torch.tensor(labels).cuda(self.device)
         # label = torch.zeros(1)
         return user_features, log_mask, news_features, label
+
+
+class PretrainDataset(Dataset):
+    def __init__(self,
+                 args,
+                 news_index,
+                 news_combined):
+        super(PretrainDataset, self).__init__()
+        self.device = args.device_id
+        self.news_combined = news_combined
+        self.news_index = news_index
+
+    def parser_text(self, indices):
+        title_text = self.news_combined['title_text'][indices]
+        title_mask = self.news_combined['title_mask'][indices]
+        body_text = self.news_combined['body_text'][indices]
+        body_mask = self.news_combined['body_mask'][indices]
+        # category = self.news_combined['category'][indices]
+        # sub_category = self.news_combined['sub_category'][indices]
+
+        title_text = torch.LongTensor(title_text).cuda(self.device)
+        title_mask = torch.LongTensor(title_mask).cuda(self.device)
+        body_text = torch.LongTensor(body_text).cuda(self.device)
+        body_mask = torch.LongTensor(body_mask).cuda(self.device)
+        # category = torch.LongTensor(category).cuda(self.device)
+        # sub_category = torch.LongTensor(sub_category).cuda(self.device)
+
+        return title_text, title_mask, body_text, body_mask
+
+    def _process(self):
+        pass
+
+    def __getitem__(self, item):
+        news_features = self.parser_text(item + 1)
+        return news_features
+
+    def __len__(self):
+        return len(self.news_index)

@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 from transformers import AutoConfig, AutoModel, AutoTokenizer, BertConfig, BertModel
 
-from data_loader import DatasetTest, DatasetTrain
+from data_loader import DatasetTest, DatasetTrain, PretrainDataset
 from model import Model
 from parameters import parse_args
 from preprocess import get_doc_input, glove, load_news, read_news, save_news
@@ -30,6 +30,87 @@ def save_best_results(path, args, best_epoch, best_auc, best_mrr, best_ndcg5, be
             '\nBEST_SCORE : epoch: {:.0f}\tAUC = {:.4f}\tMRR = {:.4f}\tnDCG@5 = {:.4f}\tnDCG@10 = {:.4f}\n'.format(
                 best_epoch, best_auc, best_mrr, best_ndcg5, best_ndcg10))
         b_result_f.write(f'THE END : {get_time_kst()} \n')
+
+
+def pretrain(args, model, train_dataloader):
+    # Only support title Turing now
+    logging.info('Training...')
+    if not os.path.exists('./model'): os.mkdir('./model')
+
+    # results
+    if not os.path.exists('./results'): os.mkdir('./results')
+    mdhm = str(datetime.now(timezone('Asia/Seoul')).strftime('%m%d%H%M'))  # MonthDailyHourMinute .....e.g., 05091040
+    results_file_path = f"./results/train_device_{args.device_id}_{mdhm}_{args.name}.txt"
+    # results_file_path = './results/train_device_%d.txt' % args.device_id
+
+    # Only For Best Result
+    best_results_file_path = './results/train_best.txt'  # only Best result 파일
+
+    # parameters
+    with open(results_file_path, 'a', encoding='utf-8') as result_f:
+        result_f.write(
+            '\n=================================================\n==================== train =====================\n')
+        result_f.write(get_time_kst())
+        result_f.write('\n')
+        result_f.write('Argument List:' + str(sys.argv) + '\n')
+        for i, v in vars(args).items():
+            result_f.write(f'{i}:{v} || ')
+        result_f.write('\n')
+
+    best_auc, best_epoch = 0, 0
+    best_mrr, best_ndcg5, best_ndcg10 = 0, 0, 0
+
+    if args.model_path != 'none':
+        model_name = args.name
+        model_path = os.path.join('./model/', args.model_path)
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu'))[model_name])
+
+    for ep in range(args.epoch):
+        # if ep<2:
+        #     args.reg_term=1 # LM 만 학습
+        # else:
+        #     args.reg_term=0 # CTR 만 학습
+        # model.train()
+
+        if args.eval == 'yes': model.train()
+
+        total_loss = 0.0
+        for news_features in tqdm(train_dataloader, bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
+            loss, _, _ = model.pretrain_mlm(news_features)
+            total_loss += loss.item()
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        scheduler.step()
+
+        print('Loss:\t%.4f' % total_loss)
+
+        if args.eval == 'yes': model.eval()
+
+        hits = []
+        with torch.no_grad():
+            for news_features in tqdm(train_dataloader, bar_format=' {percentage:3.0f} % | {bar:23} {r_bar}'):
+
+                _, score_lm, masked_index = model.pretrain_mlm(news_features)
+
+                sub_scores_lm = score_lm.topk(10)[1]
+                sub_scores_lm = sub_scores_lm.cpu().numpy()
+                title_text = news_features[0]
+                body_text = news_features[2]
+                all_text = torch.cat([title_text, body_text], dim=1)
+                all_text = all_text.squeeze(0).cpu().numpy()
+                masked_index = masked_index.cpu().numpy()
+
+                for (text, midx, s_score) in zip(all_text, masked_index, sub_scores_lm):
+                    target = text[midx]
+                    hits.append(np.isin(target, s_score))
+
+        hit = np.mean(hits)
+
+        print('Epoch %d : dev done\nDev criterions' % (ep + 1))
+        print('hit@10(LM) = {:.4f}'.format(hit))
+    torch.save({model.name: model.state_dict()}, f'./model/{mdhm}_{model.name}')  # TIME_MODELNAME 형식
 
 
 def train(args, model, train_dataloader, dev_dataloader):
@@ -52,7 +133,7 @@ def train(args, model, train_dataloader, dev_dataloader):
             '\n=================================================\n==================== train =====================\n')
         result_f.write(get_time_kst())
         result_f.write('\n')
-        result_f.write('Argument List:'+ str(sys.argv)+'\n')
+        result_f.write('Argument List:' + str(sys.argv) + '\n')
         for i, v in vars(args).items():
             result_f.write(f'{i}:{v} || ')
         result_f.write('\n')
@@ -258,11 +339,11 @@ if __name__ == '__main__':
     args.word_embedding_dim = bert_config.hidden_size
 
     # if 'prajjwal1' not in args.bert_name:
-        
+
     modules = [bert_model.encoder.layer[:bert_config.num_hidden_layers - args.n_layer]]  # 2개 남기기
     if args.bert_train_embedding == 'false':
         modules.append(bert_model.embeddings)
-    
+
     for module in modules:
         for param in module.parameters():
             param.requires_grad = False
@@ -303,8 +384,19 @@ if __name__ == '__main__':
         args=args
     )
 
+    pretrain_dataset = PretrainDataset(
+        news_index=news_index,
+        news_combined=news_combined,
+        args=args
+    )
+
+    pretrain_dataloader = DataLoader(pretrain_dataset, batch_size=32, shuffle=True)
+    # pretrain_dataloader = DataLoader(pretrain_dataset, batch_size=32, shuffle=False)
+
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     model = model.cuda(args.device_id)
+
+    pretrain(args, model, pretrain_dataloader)
 
     if 'train' in args.mode:
         dev_dataset = DatasetTest(

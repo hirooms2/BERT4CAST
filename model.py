@@ -55,3 +55,9 @@ class Model(nn.Module):
             return loss
         else:
             return score
+
+    def pretrain_mlm(self, news_features):
+        score_lm, masked_index, masked_voca_id = self.news_encoder.forward_lm(news_features)
+        loss_lm = self.criterion(score_lm, masked_voca_id)
+
+        return loss_lm, score_lm, masked_index
